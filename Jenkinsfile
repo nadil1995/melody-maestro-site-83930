@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "nadil95/flute:latest"
-        EC2_HOST = "13.40.154.215" 
+        DOCKER_IMAGE = "nadil95/lashiweb:latest"
+        EC2_HOST = "35.179.93.234" 
         SSH_CREDENTIALS = "geo-ssh"
     }
 
