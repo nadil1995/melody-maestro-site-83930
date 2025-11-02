@@ -1,8 +1,20 @@
 {
   "name": "vite_react_shadcn_ts",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
+  "description": "**URL**: https://lovable.dev/projects/de868d50-076c-49a8-b568-b1192a2d0eec",
+  "homepage": "https://github.com/nadil1995/melody-maestro-site-83930#readme",
+  "bugs": {
+    "url": "https://github.com/nadil1995/melody-maestro-site-83930/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nadil1995/melody-maestro-site-83930.git"
+  },
+  "license": "ISC",
+  "author": "",
   "type": "module",
+  "main": "eslint.config.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -78,6 +90,6 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
-    "vite": "^5.4.19"
+    "vite": "^7.1.12"
   }
 }
