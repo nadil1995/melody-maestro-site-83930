@@ -9,7 +9,7 @@ const Footer = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Music className="w-6 h-6 text-accent" />
-                <span className="font-playfair text-xl font-bold">Professional Flutist</span>
+                <span className="font-playfair text-xl font-bold">Professional Flautist</span>
               </div>
               <p className="text-secondary-foreground/80 text-sm">
                 Bringing the beauty of Western and Indian classical music to students and audiences worldwide.
@@ -51,7 +51,7 @@ const Footer = () => {
               <h3 className="font-playfair text-lg font-bold mb-4">Connect</h3>
               <div className="flex gap-4">
                 <a 
-                  href="https://facebook.com" 
+                  href="https://www.facebook.com/profile.php?id=61565884451319" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-secondary-foreground/80 hover:text-accent transition-colors"
@@ -59,7 +59,7 @@ const Footer = () => {
                 >
                   <Facebook className="w-5 h-5" />
                 </a>
-                <a 
+                {/* <a 
                   href="https://instagram.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -67,9 +67,9 @@ const Footer = () => {
                   aria-label="Instagram"
                 >
                   <Instagram className="w-5 h-5" />
-                </a>
+                </a> */}
                 <a 
-                  href="https://youtube.com" 
+                  href="https://www.youtube.com/@l_fl_auto" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-secondary-foreground/80 hover:text-accent transition-colors"
@@ -77,7 +77,7 @@ const Footer = () => {
                 >
                   <Youtube className="w-5 h-5" />
                 </a>
-                <a 
+                {/* <a 
                   href="https://twitter.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -85,8 +85,8 @@ const Footer = () => {
                   aria-label="Twitter"
                 >
                   <Twitter className="w-5 h-5" />
-                </a>
-                <a 
+                </a> */}
+                {/* <a 
                   href="https://linkedin.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -94,13 +94,13 @@ const Footer = () => {
                   aria-label="LinkedIn"
                 >
                   <Linkedin className="w-5 h-5" />
-                </a>
+                </a> */}
               </div>
             </div>
           </div>
 
           <div className="border-t border-secondary-foreground/20 pt-8 text-center text-sm text-secondary-foreground/60">
-            <p>&copy; {new Date().getFullYear()} Professional Flutist. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Professional Flautist. All rights reserved.</p>
           </div>
         </div>
       </div>

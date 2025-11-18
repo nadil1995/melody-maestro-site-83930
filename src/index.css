@@ -107,4 +107,64 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar for modern look */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.3);
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+  }
+}
+
+@layer utilities {
+  /* Glass morphism utilities */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Parallax utilities */
+  .parallax-slow {
+    transform: translateY(calc(var(--scroll) * 0.5));
+  }
+
+  .parallax-medium {
+    transform: translateY(calc(var(--scroll) * 0.75));
+  }
+
+  .parallax-fast {
+    transform: translateY(calc(var(--scroll) * 1));
+  }
+
+  /* Performance optimizations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  .optimize-animations {
+    will-change: opacity, transform;
+  }
+}
+
+/* Optimize images for faster loading */
+img {
+  content-visibility: auto;
 }

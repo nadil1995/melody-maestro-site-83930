@@ -1,34 +1,49 @@
+import { useEffect, useState } from "react";
 import { Music, Award, Calendar } from "lucide-react";
 import Footer from "@/components/Footer";
+import { usePageTracking } from "@/hooks/usePageTracking";
 
 const Portfolio = () => {
-  const performances = [
-    {
-      title: "Symphony Orchestra Performance",
-      date: "March 2024",
-      venue: "National Concert Hall",
-      description: "Featured soloist in Mozart's Flute Concerto No. 1",
-    },
-    {
-      title: "Indian Classical Ensemble",
-      date: "January 2024",
-      venue: "Cultural Center",
-      description: "Bansuri performance in traditional ragas",
-    },
-    {
-      title: "Chamber Music Recital",
-      date: "November 2023",
-      venue: "City Music Hall",
-      description: "Baroque chamber music with period instruments",
-    },
-  ];
+  usePageTracking("Portfolio");
 
-  const achievements = [
-    "Principal Flutist, City Symphony Orchestra",
-    "Graduate, Prestigious Music Conservatory",
-    "Award Winner, National Music Competition",
-    "Guest Artist, International Music Festival",
-  ];
+  const [performances, setPerformances] = useState([]);
+  const [achievements, setAchievements] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Replace these with your published CSV links or API endpoints
+        const perfRes = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv");
+        const achRes = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv");
+
+        const perfText = await perfRes.text();
+        const achText = await achRes.text();
+
+        // Parse CSV manually (simple split logic)
+        const parseCSV = (str) => {
+          const [header, ...rows] = str.trim().split("\n").map(r => r.split(","));
+          return rows.map(row =>
+            Object.fromEntries(header.map((key, i) => [key.trim(), row[i]?.trim()]))
+          );
+        };
+
+        const performancesData = parseCSV(perfText);
+        const achievementsData = parseCSV(achText).map(r => r.achievement);
+
+        setPerformances(performancesData);
+        setAchievements(achievementsData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false); // Set loading to false even on error
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <div className="p-10 text-center text-muted-foreground">Loading portfolio...</div>;
 
   return (
     <div className="min-h-screen pt-16 bg-background">
@@ -36,9 +51,7 @@ const Portfolio = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h1 className="font-playfair text-4xl md:text-5xl font-bold text-foreground mb-4">
-                Portfolio
-              </h1>
+              <h1 className="font-playfair text-4xl md:text-5xl font-bold text-foreground mb-4">Portfolio</h1>
               <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto mb-6" />
               <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
                 A collection of performances, collaborations, and achievements throughout my musical journey
@@ -52,24 +65,25 @@ const Portfolio = () => {
                 Recent Performances
               </h2>
               <div className="grid gap-6">
-                {performances.map((performance, index) => (
-                  <div
-                    key={index}
-                    className="bg-card p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-playfair text-2xl font-semibold text-foreground">
-                        {performance.title}
-                      </h3>
-                      <span className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {performance.date}
-                      </span>
+                {performances.length > 0 ? (
+                  performances.map((p, index) => (
+                    <div key={index} className="bg-card p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-playfair text-2xl font-semibold text-foreground">{p.title}</h3>
+                        <span className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {p.date}
+                        </span>
+                      </div>
+                      <p className="text-primary font-medium mb-2">{p.venue}</p>
+                      <p className="text-foreground/70">{p.description}</p>
                     </div>
-                    <p className="text-primary font-medium mb-2">{performance.venue}</p>
-                    <p className="text-foreground/70">{performance.description}</p>
+                  ))
+                ) : (
+                  <div className="bg-card p-8 rounded-lg border border-border text-center">
+                    <p className="text-muted-foreground">Performance data will be displayed here soon.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -80,14 +94,17 @@ const Portfolio = () => {
                 Achievements & Experience
               </h2>
               <div className="grid md:grid-cols-2 gap-4">
-                {achievements.map((achievement, index) => (
-                  <div
-                    key={index}
-                    className="bg-card p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <p className="text-lg text-foreground">{achievement}</p>
+                {achievements.length > 0 ? (
+                  achievements.map((a, index) => (
+                    <div key={index} className="bg-card p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
+                      <p className="text-lg text-foreground">{a}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-2 bg-card p-8 rounded-lg border border-border text-center">
+                    <p className="text-muted-foreground">Achievements data will be displayed here soon.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

@@ -1,42 +1,84 @@
 import { useState } from "react";
 import Footer from "@/components/Footer";
-import heroFlute from "@/assets/hero-flute.jpg";
-import musicNotes from "@/assets/music-notes.jpg";
+import { usePageTracking } from "@/hooks/usePageTracking";
+
+// Import all gallery photos
+import img8993 from "@/assets/galaryphotos/IMG_8993.jpg";
+import img8994 from "@/assets/galaryphotos/IMG_8994.jpg";
+import img8997 from "@/assets/galaryphotos/IMG_8997 2.jpg";
+import img8998 from "@/assets/galaryphotos/IMG_8998.jpg";
+import img8999 from "@/assets/galaryphotos/IMG_8999.jpg";
+import img9001 from "@/assets/galaryphotos/IMG_9001.jpg";
+import img9002 from "@/assets/galaryphotos/IMG_9002.jpg";
+import img9003 from "@/assets/galaryphotos/IMG_9003 2.jpg";
+import img9005 from "@/assets/galaryphotos/IMG_9005.jpg";
+import img9006 from "@/assets/galaryphotos/IMG_9006.jpg";
+import img9007 from "@/assets/galaryphotos/IMG_9007.jpg";
 
 const Gallery = () => {
+  usePageTracking("Gallery");
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const galleryItems = [
     {
-      src: heroFlute,
-      alt: "Concert Flute Performance",
-      title: "Concert Performance",
+      src: img8993,
+      alt: "Flute Performance",
+      title: "Performance Moment - gustav mahler orchestra sri lanka",
     },
     {
-      src: musicNotes,
-      alt: "Music Notes and Flute",
-      title: "Music Preparation",
+      src: img8994,
+      alt: "Musical Performance",
+      title: "Performance Moment - gustav mahler orchestra sri lanka",
+    },
+ 
+    {
+      src: img8997,
+      alt: "Concert Performance",
+      title: "Concert Performance - gustav mahler orchestra sri lanka",
     },
     {
-      src: heroFlute,
-      alt: "Orchestra Performance",
-      title: "Orchestra Rehearsal",
+      src: img8998,
+      alt: "Concert Performance",
+      title: "Concert Performance - gustav mahler orchestra sri lanka",
     },
     {
-      src: musicNotes,
-      alt: "Classical Composition",
-      title: "Classical Studies",
+      src: img8999,
+      alt: "Wind Orchestra Performance",
+      title: "Orchestra Performance - Colombo Wind Orchestra",
     },
     {
-      src: heroFlute,
-      alt: "Solo Recital",
-      title: "Solo Recital",
+      src: img9001,
+      alt: "Musical Performance",
+      title: "Stage Performance - Bank of ceylon London branch 75th anniversary",
     },
     {
-      src: musicNotes,
-      alt: "Teaching Session",
-      title: "Teaching Session",
+      src: img9002,
+      alt: "Flute Solo",
+      title: "Candlelight Solo Performance",
     },
+    {
+      src: img9003,
+      alt: "Concert Moment",
+      title: "Candlelight Solo Performance",
+    },
+    {
+      src: img9005,
+          alt: "Stage Performance",
+      title: "Pawan Podak Concert",
+    },
+    {
+      src: img9006,
+      alt: "Stage Performance",
+      title: "Pawan Podak Concert",
+    },
+
+    {
+      src: img9007,
+      alt: "Stage Performance",
+      title: "Pawan Podak Concert",
+    },
+
   ];
 
   return (
