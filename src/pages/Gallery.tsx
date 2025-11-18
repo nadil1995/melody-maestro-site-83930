@@ -3,17 +3,17 @@ import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
 
 // Import all gallery photos
-import img8993 from "@/assets/galaryphotos/IMG_8993.jpg";
-import img8994 from "@/assets/galaryphotos/IMG_8994.jpg";
-import img8997 from "@/assets/galaryphotos/IMG_8997 2.jpg";
-import img8998 from "@/assets/galaryphotos/IMG_8998.jpg";
-import img8999 from "@/assets/galaryphotos/IMG_8999.jpg";
-import img9001 from "@/assets/galaryphotos/IMG_9001.jpg";
-import img9002 from "@/assets/galaryphotos/IMG_9002.jpg";
-import img9003 from "@/assets/galaryphotos/IMG_9003 2.jpg";
-import img9005 from "@/assets/galaryphotos/IMG_9005.jpg";
-import img9006 from "@/assets/galaryphotos/IMG_9006.jpg";
-import img9007 from "@/assets/galaryphotos/IMG_9007.jpg";
+import img8993 from "@/assets/galaryphotos/IMG_8993.JPG";
+import img8994 from "@/assets/galaryphotos/IMG_8994.JPG";
+import img8997 from "@/assets/galaryphotos/IMG_8997 2.JPG";
+import img8998 from "@/assets/galaryphotos/IMG_8998.JPG";
+import img8999 from "@/assets/galaryphotos/IMG_8999.JPG";
+import img9001 from "@/assets/galaryphotos/IMG_9001.JPG";
+import img9002 from "@/assets/galaryphotos/IMG_9002.JPG";
+import img9003 from "@/assets/galaryphotos/IMG_9003 2.JPG";
+import img9005 from "@/assets/galaryphotos/IMG_9005.JPG";
+import img9006 from "@/assets/galaryphotos/IMG_9006.JPG";
+import img9007 from "@/assets/galaryphotos/IMG_9007.JPG";
 
 const Gallery = () => {
   usePageTracking("Gallery");
