@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
-import { Play, X } from "lucide-react";
+import { Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState } from "react";
 
 interface Video {
   id: string;
@@ -15,7 +14,6 @@ interface MyWorkProps {
 }
 
 const MyWork = ({ videos = [] }: MyWorkProps) => {
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   // Default videos if none provided
   const defaultVideos: Video[] = [
     {
@@ -60,7 +58,7 @@ const MyWork = ({ videos = [] }: MyWorkProps) => {
               My Work
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Watch my performances and musical journey
+              Watch my performances
             </p>
             <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto mt-6" />
           </motion.div>
@@ -83,13 +81,15 @@ const MyWork = ({ videos = [] }: MyWorkProps) => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                        <button
-                          onClick={() => setSelectedVideo(video)}
+                        <a
+                          href={getYouTubeEmbedUrl(video.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="w-16 h-16 bg-primary rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
                           aria-label={`Play ${video.title}`}
                         >
                           <Play className="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" />
-                        </button>
+                        </a>
                       </div>
                     </div>
                     <div className="p-6">
@@ -106,49 +106,29 @@ const MyWork = ({ videos = [] }: MyWorkProps) => {
             ))}
           </div>
 
-          {/* Video Modal */}
-          {selectedVideo && (
+          {/* Embedded Video Section - Optional Full Player */}
+          {displayVideos.length > 0 && (
             <motion.div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedVideo(null)}
+              className="mt-16"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
             >
-              <motion.div
-                className="relative w-full max-w-5xl"
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => setSelectedVideo(null)}
-                  className="absolute -top-12 right-0 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
-                  aria-label="Close video"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-
-                <div className="relative aspect-video rounded-lg overflow-hidden shadow-2xl bg-black">
+              <h3 className="font-playfair text-2xl font-bold text-foreground mb-6 text-center">
+                Featured Performance
+              </h3>
+              <div className="max-w-4xl mx-auto">
+                <div className="relative aspect-video rounded-lg overflow-hidden shadow-2xl">
                   <iframe
-                    src={`${getYouTubeEmbedUrl(selectedVideo.id)}?autoplay=1`}
-                    title={selectedVideo.title}
+                    src={getYouTubeEmbedUrl(displayVideos[0].id)}
+                    title={displayVideos[0].title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="w-full h-full"
                   />
                 </div>
-
-                <div className="mt-4 text-center">
-                  <h3 className="font-playfair text-xl md:text-2xl font-bold text-white mb-2">
-                    {selectedVideo.title}
-                  </h3>
-                  <p className="text-white/80 text-sm md:text-base">
-                    {selectedVideo.description}
-                  </p>
-                </div>
-              </motion.div>
+              </div>
             </motion.div>
           )}
         </div>
