@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/nadil1995/melody-maestro-site-83930.git'
+                git branch: 'v1', url: 'https://github.com/nadil1995/melody-maestro-site-83930.git'
             }
         }
 
