@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "nadil95/lashiweb:latest"
-        EC2_HOST = "35.179.93.234" 
+        EC2_HOST = "13.134.139.151" 
         SSH_CREDENTIALS = "geo-ssh"
     }
 
