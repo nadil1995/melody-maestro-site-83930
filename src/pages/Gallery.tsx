@@ -4,101 +4,100 @@ import { X } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
 
-// Import all gallery photos
-// import img8993 from "@/assets/galaryphotos/8993.JPG";
-// import img8994 from "@/assets/galaryphotos/8994.JPG";
-// import img8997 from "@/assets/galaryphotos/89972.JPG";
-// import img8998 from "@/assets/galaryphotos/8998.JPG";
-// import img8999 from "@/assets/galaryphotos/8999.JPG";
-// import img9001 from "@/assets/galaryphotos/9001.JPG";
-// import img9002 from "@/assets/galaryphotos/9002.JPG";
-// import img9003 from "@/assets/galaryphotos/09003 2.JPG";
-// import img9005 from "@/assets/galaryphotos/9005.JPG";
-// import img9006 from "@/assets/galaryphotos/9006.JPG";
-// import img9007 from "@/assets/galaryphotos/9007.JPG";
+type GalleryItem = {
+  src: string;
+  alt: string;
+  title: string;
+};
+
+const GALLERY_ITEMS: readonly GalleryItem[] = [
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/IMG_8993.jpg",
+    alt: "Flute Performance",
+    title: "Performance Moment - gustav mahler orchestra sri lanka",
+  },
+  {
+    src:"https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis+images/8994.jpg",
+    alt: "Musical Performance",
+    title: "Performance Moment - gustav mahler orchestra sri lanka",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/89972.jpg",
+    alt: "Concert Performance",
+    title: "Concert Performance - gustav mahler orchestra sri lanka",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/8998.jpg",
+    alt: "Concert Performance",
+    title: "Concert Performance - gustav mahler orchestra sri lanka",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/8999.jpg",
+    alt: "Wind Orchestra Performance",
+    title: "Orchestra Performance - Colombo Wind Orchestra",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/9001.jpg",
+    alt: "Musical Performance",
+    title: "Stage Performance - Bank of ceylon London branch 75th anniversary",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/9002.jpg",
+    alt: "Flute Solo",
+    title: "Candlelight Solo Performance",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/o9003%202.jpg",
+    alt: "Concert Moment",
+    title: "Candlelight Solo Performance",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/9005.jpg",
+    alt: "Stage Performance",
+    title: "Pawan Podak Concert",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/9006.jpg",
+    alt: "Stage Performance",
+    title: "Pawan Podak Concert",
+  },
+  {
+    src: "https://geoapp-build-artifacts.s3.eu-west-2.amazonaws.com/Lashis%20images/9007.jpg",
+    alt: "Stage Performance",
+    title: "Pawan Podak Concert",
+  },
+];
 
 const Gallery = () => {
   usePageTracking("Gallery");
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  // Close lightbox on Escape key
+  const selectedItem =
+    selectedIndex !== null ? GALLERY_ITEMS[selectedIndex] ?? null : null;
+
+  // Close lightbox on Escape key and lock body scroll
   useEffect(() => {
+    if (selectedIndex === null) {
+      return;
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedImage(null);
+      if (e.key === "Escape") {
+        setSelectedIndex(null);
+      }
     };
 
-    if (selectedImage) {
-      document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
-    }
+    const previousOverflow = document.body.style.overflow;
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = previousOverflow;
     };
-  }, [selectedImage]);
-
-  const galleryItems = [
-    {
-      src: img8993,
-      alt: "Flute Performance",
-      title: "Performance Moment - gustav mahler orchestra sri lanka",
-    },
-    {
-      src: img8994,
-      alt: "Musical Performance",
-      title: "Performance Moment - gustav mahler orchestra sri lanka",
-    },
- 
-    {
-      src: img8997,
-      alt: "Concert Performance",
-      title: "Concert Performance - gustav mahler orchestra sri lanka",
-    },
-    {
-      src: img8998,
-      alt: "Concert Performance",
-      title: "Concert Performance - gustav mahler orchestra sri lanka",
-    },
-    {
-      src: img8999,
-      alt: "Wind Orchestra Performance",
-      title: "Orchestra Performance - Colombo Wind Orchestra",
-    },
-    {
-      src: img9001,
-      alt: "Musical Performance",
-      title: "Stage Performance - Bank of ceylon London branch 75th anniversary",
-    },
-    {
-      src: img9002,
-      alt: "Flute Solo",
-      title: "Candlelight Solo Performance",
-    },
-    {
-      src: img9003,
-      alt: "Concert Moment",
-      title: "Candlelight Solo Performance",
-    },
-    {
-      src: img9005,
-          alt: "Stage Performance",
-      title: "Pawan Podak Concert",
-    },
-    {
-      src: img9006,
-      alt: "Stage Performance",
-      title: "Pawan Podak Concert",
-    },
-
-    {
-      src: img9007,
-      alt: "Stage Performance",
-      title: "Pawan Podak Concert",
-    },
-
-  ];
+  }, [selectedIndex]);
 
   return (
     <div className="min-h-screen pt-16 bg-background">
@@ -116,19 +115,21 @@ const Gallery = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {galleryItems.map((item, index) => (
+              {GALLERY_ITEMS.map((item, index) => (
                 <motion.div
-                  key={index}
+                  key={item.src}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}
                   className="group relative aspect-square overflow-hidden rounded-lg border border-border shadow-sm hover:shadow-lg transition-all cursor-pointer"
-                  onClick={() => setSelectedImage(item.src)}
+                  onClick={() => setSelectedIndex(index)}
                 >
                   <img
                     src={item.src}
                     alt={item.alt}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -147,16 +148,19 @@ const Gallery = () => {
 
       {/* Lightbox */}
       <AnimatePresence>
-        {selectedImage && (
+        {selectedItem && (
           <motion.div
             className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label={selectedItem.title}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
+            onClick={() => setSelectedIndex(null)}
           >
             <button
-              onClick={() => setSelectedImage(null)}
+              onClick={() => setSelectedIndex(null)}
               className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
               aria-label="Close image"
             >
@@ -164,8 +168,8 @@ const Gallery = () => {
             </button>
 
             <motion.img
-              src={selectedImage}
-              alt="Gallery item"
+              src={selectedItem.src}
+              alt={selectedItem.alt}
               className="max-w-full max-h-full object-contain rounded-lg"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

@@ -1,6 +1,7 @@
-import { motion } from "framer-motion";
-import { Play } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
 
 interface Video {
   id: string;
@@ -14,6 +15,7 @@ interface MyWorkProps {
 }
 
 const MyWork = ({ videos = [] }: MyWorkProps) => {
+  const [playingVideo, setPlayingVideo] = useState<Video | null>(null);
   // Default videos if none provided
   const defaultVideos: Video[] = [
     {
@@ -74,22 +76,19 @@ const MyWork = ({ videos = [] }: MyWorkProps) => {
               >
                 <Card className="border-border hover:shadow-xl transition-all duration-300 group overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="relative aspect-video overflow-hidden">
+                    <div className="relative aspect-video overflow-hidden cursor-pointer" onClick={() => setPlayingVideo(video)}>
                       <img
                         src={video.thumbnail || getYouTubeThumbnail(video.id)}
                         alt={video.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                        <a
-                          href={getYouTubeEmbedUrl(video.id)}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
                           className="w-16 h-16 bg-primary rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
                           aria-label={`Play ${video.title}`}
                         >
                           <Play className="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" />
-                        </a>
+                        </button>
                       </div>
                     </div>
                     <div className="p-6">
@@ -106,31 +105,52 @@ const MyWork = ({ videos = [] }: MyWorkProps) => {
             ))}
           </div>
 
-          {/* Embedded Video Section - Optional Full Player */}
-          {displayVideos.length > 0 && (
-            <motion.div
-              className="mt-16"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              <h3 className="font-playfair text-2xl font-bold text-foreground mb-6 text-center">
-                Featured Performance
-              </h3>
-              <div className="max-w-4xl mx-auto">
-                <div className="relative aspect-video rounded-lg overflow-hidden shadow-2xl">
-                  <iframe
-                    src={getYouTubeEmbedUrl(displayVideos[0].id)}
-                    title={displayVideos[0].title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full"
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
+          {/* Video Modal Overlay */}
+          <AnimatePresence>
+            {playingVideo && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+                onClick={() => setPlayingVideo(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative w-full max-w-5xl aspect-video"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => setPlayingVideo(null)}
+                    className="absolute -top-12 right-0 text-white hover:text-primary transition-colors p-2"
+                    aria-label="Close video"
+                  >
+                    <X className="w-8 h-8" />
+                  </button>
+                  <div className="w-full h-full rounded-lg overflow-hidden shadow-2xl">
+                    <iframe
+                      src={`${getYouTubeEmbedUrl(playingVideo.id)}?autoplay=1`}
+                      title={playingVideo.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <div className="mt-4 text-white">
+                    <h3 className="font-playfair text-xl font-semibold mb-2">
+                      {playingVideo.title}
+                    </h3>
+                    <p className="text-gray-300 text-sm">
+                      {playingVideo.description}
+                    </p>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </section>
