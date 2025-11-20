@@ -38,9 +38,15 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'VITE_EMAILJS_SERVICE_ID';
-      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'VITE_EMAILJS_TEMPLATE_ID';
-      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'VITE_EMAILJS_PUBLIC_KEY';
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+      // Check if environment variables are configured
+      if (!serviceId || !templateId || !publicKey) {
+        console.error('EmailJS configuration missing. Check environment variables.');
+        throw new Error('EmailJS not configured. Please contact the administrator.');
+      }
 
       await emailjs.send(
         serviceId,
