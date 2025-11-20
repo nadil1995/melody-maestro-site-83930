@@ -11,62 +11,53 @@ but the server responded with a MIME type of "text/html"
 
 ---
 
-## THE SOLUTION - Run on Your Production Server
+## THE SOLUTION - Using Jenkins (Your Setup) ⭐
 
-### Option 1: Automated Script (Easiest) ⭐
+### Option 1: Trigger Jenkins Build (Easiest)
 
-```bash
-# SSH into your production server
-ssh user@lflauto.co.uk
+Since you're using Jenkins for CI/CD, simply trigger a new build:
 
-# Navigate to project directory
-cd /path/to/melody-maestro-site-83930
+1. **Push the changes** (already done ✅):
+   ```bash
+   # Changes are already pushed to v1 branch
+   git log --oneline -5
+   ```
 
-# Run the deployment script
-./deploy.sh
-```
+2. **Trigger Jenkins pipeline:**
+   - Go to your Jenkins dashboard
+   - Find your pipeline job
+   - Click **"Build Now"**
+   - Or if you have a webhook, just push any change
 
-That's it! The script will automatically:
-- Pull latest changes
-- Build new Docker image with fixed nginx config
-- Stop old container
-- Start new container
-- Show you the logs
+3. **Jenkins will automatically:**
+   - ✅ Pull latest code from `v1` branch
+   - ✅ Build the Docker image with the **new nginx.conf**
+   - ✅ Push to Docker Hub (`nadil95/lashiweb:latest`)
+   - ✅ Deploy to EC2 (13.134.139.151)
+   - ✅ Stop old container and start new one
 
 ---
 
-### Option 2: Manual Steps
+### Option 2: Manual Deployment on EC2
 
-If the script doesn't work, run these commands manually:
+If you want to deploy manually on your EC2 server:
 
 ```bash
-# 1. SSH into server
-ssh user@lflauto.co.uk
+# SSH into EC2
+ssh ubuntu@13.134.139.151
 
-# 2. Go to project directory
-cd /path/to/melody-maestro-site-83930
+# Stop old container
+sudo docker stop geoapp
+sudo docker rm geoapp
 
-# 3. Pull latest changes
-git pull origin v1
+# Pull latest image (with nginx fix)
+sudo docker pull nadil95/lashiweb:latest
 
-# 4. Build new image
-docker build -t lflauto-website:latest .
+# Start new container
+sudo docker run -d -p 8081:80 --name geoapp nadil95/lashiweb:latest
 
-# 5. Stop old container
-docker stop lflauto-website
-
-# 6. Remove old container
-docker rm lflauto-website
-
-# 7. Start new container
-docker run -d \
-  --name lflauto-website \
-  -p 80:80 \
-  --restart unless-stopped \
-  lflauto-website:latest
-
-# 8. Check logs
-docker logs -f lflauto-website
+# Check logs
+sudo docker logs -f geoapp
 ```
 
 Press `Ctrl+C` to exit logs.
@@ -77,19 +68,22 @@ Press `Ctrl+C` to exit logs.
 
 After deployment, test these URLs in your browser:
 
-1. **Main site:** https://lflauto.co.uk
+1. **Main site:** http://13.134.139.151:8081
    - Should load normally
 
-2. **Admin dashboard:** https://lflauto.co.uk/maduadmin
+2. **Admin dashboard:** http://13.134.139.151:8081/maduadmin
    - Should show login screen (not 404!)
    - Password: `madu2025admin`
 
 3. **Other pages:**
-   - https://lflauto.co.uk/about
-   - https://lflauto.co.uk/portfolio
-   - https://lflauto.co.uk/gallery
+   - http://13.134.139.151:8081/about
+   - http://13.134.139.151:8081/portfolio
+   - http://13.134.139.151:8081/gallery
 
-All should work without errors!
+Or if you have a domain pointing to the EC2:
+- https://lflauto.co.uk/maduadmin
+
+All should work without MIME type errors!
 
 ---
 
@@ -124,53 +118,56 @@ This tells nginx:
 - Safari: `Cmd+Option+R` (Mac)
 
 ### "Container won't start"
-**Solution:** Check logs
+**Solution:** Check logs on EC2
 ```bash
-docker logs lflauto-website
+ssh ubuntu@13.134.139.151
+sudo docker logs geoapp
 ```
 
-### "deploy.sh not found"
-**Solution:** Make sure you pulled the latest code
-```bash
-git pull origin v1
-chmod +x deploy.sh
-```
+### "Jenkins build failed"
+**Solution:** Check Jenkins console output for specific errors
 
-### "Permission denied on deploy.sh"
-**Solution:** Make it executable
+### "Image not pulling on EC2"
+**Solution:**
 ```bash
-chmod +x deploy.sh
+ssh ubuntu@13.134.139.151
+sudo docker pull nadil95/lashiweb:latest
 ```
 
 ---
 
 ## Still Need Help?
 
-If it's still not working:
+If it's still not working, SSH into EC2:
+
+```bash
+ssh ubuntu@13.134.139.151
+```
 
 1. **Check which container is running:**
    ```bash
-   docker ps
+   sudo docker ps
    ```
 
 2. **Check nginx config in container:**
    ```bash
-   docker exec lflauto-website cat /etc/nginx/conf.d/default.conf
+   sudo docker exec geoapp cat /etc/nginx/conf.d/default.conf
    ```
    You should see `try_files $uri $uri/ /index.html;`
 
 3. **Test nginx config:**
    ```bash
-   docker exec lflauto-website nginx -t
+   sudo docker exec geoapp nginx -t
    ```
 
-4. **Force rebuild (nuclear option):**
+4. **Force redeploy via Jenkins:**
+   - Trigger a new build in Jenkins
+   - Or manually pull and restart:
    ```bash
-   docker stop lflauto-website
-   docker rm lflauto-website
-   docker rmi lflauto-website:latest
-   docker build --no-cache -t lflauto-website:latest .
-   docker run -d --name lflauto-website -p 80:80 --restart unless-stopped lflauto-website:latest
+   sudo docker stop geoapp
+   sudo docker rm geoapp
+   sudo docker pull nadil95/lashiweb:latest
+   sudo docker run -d -p 8081:80 --name geoapp nadil95/lashiweb:latest
    ```
 
 ---
@@ -178,9 +175,14 @@ If it's still not working:
 ## Summary
 
 **To fix the error:**
-1. SSH to production server
-2. Run `./deploy.sh`
+1. Go to your Jenkins dashboard
+2. Click "Build Now" on your pipeline
 3. Wait for deployment to complete
-4. Test https://lflauto.co.uk/maduadmin
+4. Test http://13.134.139.151:8081/maduadmin (or your domain)
+
+**OR manually deploy:**
+1. SSH to EC2: `ssh ubuntu@13.134.139.151`
+2. Pull new image: `sudo docker pull nadil95/lashiweb:latest`
+3. Restart container (see commands above)
 
 **That's it!** 🎉
