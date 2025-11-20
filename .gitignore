@@ -27,7 +27,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-dist/
-build/
-echo "dist/" >> .gitignore
-echo "build/" >> .gitignore 
