@@ -42,14 +42,44 @@ const AnalyticsContext = createContext<AnalyticsContextType | undefined>(undefin
 
 const STORAGE_KEY = 'lflauto_analytics';
 
+// Limits to prevent localStorage quota issues
+const MAX_PAGE_VIEWS = 100;
+const MAX_FORM_SUBMISSIONS = 50;
+const MAX_USER_ACTIONS = 100;
+const MAX_AGE_DAYS = 30; // Delete data older than 30 days
+
+const cleanOldData = (data: AnalyticsData): AnalyticsData => {
+  const now = Date.now();
+  const maxAge = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+
+  return {
+    ...data,
+    pageViews: data.pageViews
+      .filter(pv => now - pv.timestamp < maxAge)
+      .slice(-MAX_PAGE_VIEWS),
+    formSubmissions: data.formSubmissions
+      .filter(fs => now - fs.timestamp < maxAge)
+      .slice(-MAX_FORM_SUBMISSIONS),
+    userActions: data.userActions
+      .filter(ua => now - ua.timestamp < maxAge)
+      .slice(-MAX_USER_ACTIONS),
+  };
+};
+
 const getStoredAnalytics = (): AnalyticsData => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Clean old data on load
+      return cleanOldData(parsed);
     }
   } catch (error) {
     console.error('Error loading analytics:', error);
+    // If quota exceeded, clear storage and start fresh
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {}
   }
 
   return {
@@ -63,9 +93,31 @@ const getStoredAnalytics = (): AnalyticsData => {
 
 const saveAnalytics = (data: AnalyticsData) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    // Clean data before saving to prevent quota issues
+    const cleanedData = cleanOldData(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanedData));
   } catch (error) {
-    console.error('Error saving analytics:', error);
+    if (error instanceof Error && error.name === 'QuotaExceededError') {
+      console.warn('Storage quota exceeded. Clearing old analytics data...');
+      try {
+        // Emergency cleanup: keep only most recent data
+        const emergencyData: AnalyticsData = {
+          ...data,
+          pageViews: data.pageViews.slice(-20),
+          formSubmissions: data.formSubmissions.slice(-10),
+          userActions: data.userActions.slice(-20),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(emergencyData));
+      } catch (retryError) {
+        console.error('Failed to save analytics even after cleanup:', retryError);
+        // Last resort: clear everything
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {}
+      }
+    } else {
+      console.error('Error saving analytics:', error);
+    }
   }
 };
 

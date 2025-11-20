@@ -109,6 +109,9 @@ const AdminDashboard = () => {
   const totalUserActions = analytics.userActions.length;
   const uniquePages = new Set(analytics.pageViews.map(pv => pv.page)).size;
 
+  // Check storage usage
+  const storageWarning = totalPageViews > 80 || totalFormSubmissions > 40 || totalUserActions > 80;
+
   // Page view counts
   const pageViewCounts = analytics.pageViews.reduce((acc, pv) => {
     acc[pv.page] = (acc[pv.page] || 0) + 1;
@@ -171,6 +174,23 @@ const AdminDashboard = () => {
             </Button>
           </div>
         </div>
+
+        {/* Storage Warning */}
+        {storageWarning && (
+          <Card className="mb-8 border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+                <span className="text-2xl">⚠️</span>
+                <div>
+                  <p className="font-semibold">Analytics storage is getting full</p>
+                  <p className="text-sm">
+                    Old data is automatically cleaned after 30 days. Consider clearing data if you've reviewed recent submissions.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
