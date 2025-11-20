@@ -148,3 +148,188 @@ EmailJS is **free** for up to 200 emails/month. For this flute lessons website, 
 
 - EmailJS Documentation: [https://www.emailjs.com/docs/](https://www.emailjs.com/docs/)
 - EmailJS Support: [https://www.emailjs.com/support/](https://www.emailjs.com/support/)
+
+---
+
+# Production Deployment with Jenkins
+
+## Problem in Production
+
+The contact form works locally but fails in production with:
+```
+Email sending failed: The Public Key is invalid
+```
+
+**Root Cause:** Environment variables from `.env` file are not available during Docker build in Jenkins.
+
+## Solution for Jenkins CI/CD
+
+### Step 1: Add EmailJS Credentials to Jenkins
+
+1. **Go to Jenkins Dashboard**
+2. **Navigate to:** Manage Jenkins → Credentials → System → Global credentials (unrestricted)
+3. **Click "Add Credentials"**
+
+Create these THREE credentials:
+
+#### Credential 1: EmailJS Service ID
+- **Kind:** Secret text
+- **Scope:** Global
+- **Secret:** `service_53o80pp` (your actual service ID)
+- **ID:** `emailjs-service-id`
+- **Description:** EmailJS Service ID for contact form
+
+#### Credential 2: EmailJS Template ID
+- **Kind:** Secret text
+- **Scope:** Global
+- **Secret:** `template_ppjxjp8` (your actual template ID)
+- **ID:** `emailjs-template-id`
+- **Description:** EmailJS Template ID for contact form
+
+#### Credential 3: EmailJS Public Key
+- **Kind:** Secret text
+- **Scope:** Global
+- **Secret:** `9q86Ly5ckwPY13LNm` (your actual public key)
+- **ID:** `emailjs-public-key`
+- **Description:** EmailJS Public Key for contact form
+
+**⚠️ Important:** The IDs must match exactly:
+- `emailjs-service-id`
+- `emailjs-template-id`
+- `emailjs-public-key`
+
+### Step 2: Verify Files are Updated
+
+The following files have been updated to support environment variables:
+
+✅ **Dockerfile** - Accepts build arguments
+✅ **Jenkinsfile** - Passes credentials as build arguments
+
+### Step 3: Deploy
+
+1. **Commit and push the changes**
+2. **Trigger a Jenkins build**
+3. Jenkins will:
+   - Load the credentials
+   - Build Docker image with EmailJS config
+   - Push to Docker Hub
+   - Deploy to EC2
+
+### Step 4: Verify
+
+After deployment:
+
+1. Visit: http://13.134.139.151:8081/contact (or your domain)
+2. Fill out and submit the contact form
+3. Check for success message
+4. Verify email received at madhuhettiarachchi4@gmail.com
+
+## How It Works in Production
+
+### Build Process Flow:
+
+```
+Jenkins Credentials (Secure)
+    ↓
+Jenkinsfile loads credentials
+    ↓
+Passes as --build-arg to Docker
+    ↓
+Dockerfile accepts as ARG → ENV
+    ↓
+Vite bundles into JavaScript at build time
+    ↓
+Production website has EmailJS config embedded
+```
+
+## Troubleshooting Production
+
+### 1. "Invalid Public Key" error persists
+
+**Check Jenkins credentials:**
+```bash
+# In Jenkins, verify credentials exist:
+Manage Jenkins → Credentials → Global
+```
+
+Look for:
+- emailjs-service-id
+- emailjs-template-id
+- emailjs-public-key
+
+### 2. Verify environment variables in build
+
+Check Jenkins console output for:
+```
+Building Docker image with environment variables...
+docker build --build-arg VITE_EMAILJS_SERVICE_ID=...
+```
+
+### 3. Check if vars are in the Docker image
+
+```bash
+# SSH to EC2
+ssh ubuntu@13.134.139.151
+
+# Check if EmailJS config is in the built JavaScript
+sudo docker exec geoapp sh -c "grep -o 'service_53o80pp' /usr/share/nginx/html/assets/*.js | head -1"
+```
+
+If you see `service_53o80pp`, the config is correctly bundled.
+
+### 4. Force rebuild
+
+If credentials were just added:
+```bash
+# Trigger a new Jenkins build
+# Or manually on EC2:
+ssh ubuntu@13.134.139.151
+sudo docker stop geoapp && sudo docker rm geoapp
+sudo docker pull nadil95/lashiweb:latest
+sudo docker run -d -p 8081:80 --name geoapp nadil95/lashiweb:latest
+```
+
+## Security Notes for Production
+
+### Why Build Arguments?
+
+- ✅ Secrets stored securely in Jenkins
+- ✅ Not committed to git
+- ✅ Can be updated without code changes
+- ✅ Different values per environment
+
+### Are EmailJS Keys Safe to Expose?
+
+⚠️ EmailJS public keys are designed to be in frontend JavaScript. However:
+
+**Recommended:** Add domain restrictions in EmailJS dashboard:
+1. Go to your EmailJS service settings
+2. Add "Allowed Origins": `https://lflauto.co.uk`
+3. This prevents unauthorized use
+
+**Monitor usage:**
+- Check EmailJS dashboard for unusual activity
+- Free tier: 200 emails/month limit
+
+## Quick Reference
+
+### Your Current EmailJS Credentials:
+```
+Service ID:  service_53o80pp
+Template ID: template_ppjxjp8
+Public Key:  9q86Ly5ckwPY13LNm
+```
+
+### Jenkins Credential IDs (must match exactly):
+```
+emailjs-service-id
+emailjs-template-id
+emailjs-public-key
+```
+
+### Test URLs:
+```
+Local:      http://localhost:5173/contact
+Production: http://13.134.139.151:8081/contact
+Domain:     https://lflauto.co.uk/contact
+```

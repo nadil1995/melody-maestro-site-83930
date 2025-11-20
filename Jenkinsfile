@@ -28,19 +28,37 @@ pipeline {
 
         stage('Build & Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    ),
+                    string(
+                        credentialsId: 'emailjs-service-id',
+                        variable: 'VITE_EMAILJS_SERVICE_ID'
+                    ),
+                    string(
+                        credentialsId: 'emailjs-template-id',
+                        variable: 'VITE_EMAILJS_TEMPLATE_ID'
+                    ),
+                    string(
+                        credentialsId: 'emailjs-public-key',
+                        variable: 'VITE_EMAILJS_PUBLIC_KEY'
+                    )
+                ]) {
                     sh '''
                         echo "🔑 Logging in to Docker Hub..."
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-                        echo "🚀 Building Docker image..."
+                        echo "🚀 Building Docker image with environment variables..."
                         # Disable BuildKit to avoid missing buildx error
                         export DOCKER_BUILDKIT=0
-                        docker build -t $DOCKER_IMAGE .
+                        docker build \
+                          --build-arg VITE_EMAILJS_SERVICE_ID="$VITE_EMAILJS_SERVICE_ID" \
+                          --build-arg VITE_EMAILJS_TEMPLATE_ID="$VITE_EMAILJS_TEMPLATE_ID" \
+                          --build-arg VITE_EMAILJS_PUBLIC_KEY="$VITE_EMAILJS_PUBLIC_KEY" \
+                          -t $DOCKER_IMAGE .
 
                         echo "📦 Pushing image to Docker Hub..."
                         docker push $DOCKER_IMAGE
