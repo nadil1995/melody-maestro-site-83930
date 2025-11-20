@@ -13,15 +13,40 @@ const Portfolio = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Replace these with your published CSV links or API endpoints
-        const perfRes = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv");
-        const achRes = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv");
+        // Check cache first
+        const cachedData = sessionStorage.getItem('portfolio_data');
+        const cacheTime = sessionStorage.getItem('portfolio_cache_time');
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-        const perfText = await perfRes.text();
-        const achText = await achRes.text();
+        if (cachedData && cacheTime && Date.now() - parseInt(cacheTime) < CACHE_DURATION) {
+          const { performances: cachedPerf, achievements: cachedAch } = JSON.parse(cachedData);
+          setPerformances(cachedPerf);
+          setAchievements(cachedAch);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch with timeout
+        const fetchWithTimeout = (url: string, timeout = 5000) => {
+          return Promise.race([
+            fetch(url),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Request timeout')), timeout)
+            )
+          ]);
+        };
+
+        // Replace these with your published CSV links or API endpoints
+        const [perfRes, achRes] = await Promise.all([
+          fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv"),
+          fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv")
+        ]);
+
+        const perfText = await (perfRes as Response).text();
+        const achText = await (achRes as Response).text();
 
         // Parse CSV manually (simple split logic)
-        const parseCSV = (str) => {
+        const parseCSV = (str: string) => {
           const [header, ...rows] = str.trim().split("\n").map(r => r.split(","));
           return rows.map(row =>
             Object.fromEntries(header.map((key, i) => [key.trim(), row[i]?.trim()]))
@@ -29,7 +54,14 @@ const Portfolio = () => {
         };
 
         const performancesData = parseCSV(perfText);
-        const achievementsData = parseCSV(achText).map(r => r.achievement);
+        const achievementsData = parseCSV(achText).map((r: any) => r.achievement);
+
+        // Cache the data
+        sessionStorage.setItem('portfolio_data', JSON.stringify({
+          performances: performancesData,
+          achievements: achievementsData
+        }));
+        sessionStorage.setItem('portfolio_cache_time', Date.now().toString());
 
         setPerformances(performancesData);
         setAchievements(achievementsData);
