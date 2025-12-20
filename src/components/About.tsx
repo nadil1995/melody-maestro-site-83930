@@ -52,7 +52,7 @@ const About = () => {
                 transition={{ duration: 0.6 }}
               >
                 I am a classically trained flautist and composer based in the United Kingdom, dedicated to exploring diverse musical traditions and creating meaningful connections through music.
-Education
+
               </motion.p>
               <motion.p
                 className="text-lg text-foreground/80 leading-relaxed"
@@ -61,8 +61,9 @@ Education
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
+              <h2><strong>  Education </strong></h2>
                 I hold a Master's degree in International Music Management from the University for the Creative Arts, UK, and a Bachelor's degree from the University of the Visual and Performing Arts, Sri Lanka. My qualifications include the Licentiate of Trinity College London (LTCL) and Visharad from Bhatkhande Sangeet Vidyapith, Lucknow.
-Western Classical Music
+
               </motion.p>
 
               <motion.div
@@ -86,8 +87,9 @@ Western Classical Music
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
+               <h1><strong> Western Classical Music </strong></h1>
                Currently, I perform as a member of the Just Flute Orchestra, UK. My career in Sri Lanka includes serving as Principal Flautist for the Gustav Mahler Society and the National Unity Orchestra, as well as performing with the National Symphony Orchestra as a part-time member. I began my orchestral journey with the Colombo Wind Orchestra and the National Youth Orchestra.
-Indian Classical Music
+
               </motion.p>
               <motion.p
                 className="text-lg text-foreground/80 leading-relaxed"
@@ -96,8 +98,9 @@ Indian Classical Music
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
+                <h1><strong> Indian Classical Music </strong></h1>
                I have been recognized four times by the National Youth Awards (2012, 2015, 2017, and 2019), receiving first place in the North Indian Classical Instrumental - Flute category. This tradition remains central to my artistic practice.
-Light Music & Media
+
               </motion.p>
               <motion.p
                 className="text-lg text-foreground/80 leading-relaxed"
@@ -106,8 +109,9 @@ Light Music & Media
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
+                <h1><strong> Light Music & Media </strong></h1>
               I have contributed to Sri Lanka's light music industry, performing as a flautist for television channels including Rupavahini and providing artist backing for various productions. As a member of Viraaga Orchestra I am dedicated to bring Sri Lankan music for British Sri Lankans who lives in UK.
-Compositions & Arrangements
+
               </motion.p>
               <motion.p
                 className="text-lg text-foreground/80 leading-relaxed"
@@ -116,8 +120,9 @@ Compositions & Arrangements
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.5 }}
               >
+                <h1><strong> Compositions & Arrangements </strong></h1>
               As a composer, I create works that bridge Eastern and Western musical traditions. My original composition "Ambivalence of Life" blends Indian classical ragas with Western harmony, written for flute, violin, viola, and cello. I have also arranged the famous Sri Lankan song "Me Nagaraya" for four bamboo flutes in SATB formation, celebrating my cultural heritage through creative interpretation.
-Research
+
               </motion.p>
               <motion.p
                 className="text-lg text-foreground/80 leading-relaxed"
@@ -126,6 +131,7 @@ Research
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.6 }}
               >
+                <h1><strong> Research & Academic Interests </strong></h1>
               My academic interests have led me to complete two research projects: "Identification and Comparison of Thaats and Church Modes" and "Evaluating Environmental Sustainability Practices in the Live Music Industry in Sri Lanka."
               </motion.p>
 
@@ -150,6 +156,7 @@ Research
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.7 }}
               >
+                <h1><strong> Ambition </strong></h1>
 My ambition is to share my musical knowledge and contribute to the wider community by creating works that celebrate the unique characteristics of South Asian music while integrating them with Western musical traditions. Through composition, performance, and collaboration, I aim to build bridges between cultures and create meaningful musical experiences that honor both traditions.
               </motion.p>
 
