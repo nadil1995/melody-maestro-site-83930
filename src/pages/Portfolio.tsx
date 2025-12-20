@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Music, Award, Calendar } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Music, Award, Calendar, ExternalLink } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
 
@@ -9,8 +9,12 @@ const Portfolio = () => {
   const [performances, setPerformances] = useState([]);
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
     const fetchData = async () => {
       try {
         // Check cache first
@@ -27,7 +31,7 @@ const Portfolio = () => {
         }
 
         // Fetch with timeout
-        const fetchWithTimeout = (url: string, timeout = 5000) => {
+        const fetchWithTimeout = (url: string, timeout = 8000) => {
           return Promise.race([
             fetch(url),
             new Promise((_, reject) =>
@@ -39,7 +43,7 @@ const Portfolio = () => {
         // Replace these with your published CSV links or API endpoints
         const [perfRes, achRes] = await Promise.all([
           fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv"),
-          fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv")
+          fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vRFj7lqxRVSDEmlLHpEsDxmM7LgRgQDV22Iv_DkOTxNtEY9gyTePZexBihb6lBbPHIyW5Lf4uqXoFhf/pub?output=csv")
         ]);
 
         const perfText = await (perfRes as Response).text();
@@ -47,14 +51,36 @@ const Portfolio = () => {
 
         // Parse CSV manually (simple split logic)
         const parseCSV = (str: string) => {
-          const [header, ...rows] = str.trim().split("\n").map(r => r.split(","));
-          return rows.map(row =>
-            Object.fromEntries(header.map((key, i) => [key.trim(), row[i]?.trim()]))
-          );
+          const lines = str.trim().split("\n");
+          if (lines.length < 2) return [];
+
+          const header = lines[0].split(",").map(h => h.trim());
+          const rows = lines.slice(1);
+
+          return rows
+            .map(row => {
+              const cells = row.split(",").map(c => c.trim());
+              return Object.fromEntries(header.map((key, i) => [key, cells[i] || ""]));
+            })
+            .filter(row => Object.values(row).some(val => val)); // Filter empty rows
         };
 
-        const performancesData = parseCSV(perfText);
-        const achievementsData = parseCSV(achText).map((r: any) => r.achievement);
+        const performancesData = parseCSV(perfText)
+          .map((r: any) => ({
+            title: r.title || r.Title || "",
+            date: r.date || r.Date || "",
+            venue: r.venue || r.Venue || "",
+            description: r.description || r.Description || "",
+            image: r.image || r.Image || r.image_url || r.imageUrl || r.thumbnail || r.Thumbnail || ""
+          }))
+          .filter((p: any) => p.title);
+        const achievementsData = parseCSV(achText)
+          .map((r: any) => ({
+            title: r.achievement || r.Achievement || "",
+            image: r.image || r.Image || r.image_url || r.imageUrl || r.image_link || r.imageLink || "",
+            link: r.link || r.Link || r.url || r.URL || r.external_link || r.externalLink || ""
+          }))
+          .filter((a: any) => a.title);
 
         // Cache the data
         sessionStorage.setItem('portfolio_data', JSON.stringify({
@@ -99,16 +125,30 @@ const Portfolio = () => {
               <div className="grid gap-6">
                 {performances.length > 0 ? (
                   performances.map((p, index) => (
-                    <div key={index} className="bg-card p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="font-playfair text-2xl font-semibold text-foreground">{p.title}</h3>
-                        <span className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {p.date}
-                        </span>
+                    <div key={index} className="bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col md:flex-row">
+                      {p.image && (
+                        <div className="w-full md:w-32 h-32 bg-muted flex-shrink-0 overflow-hidden">
+                          <img
+                            src={p.image}
+                            alt={p.title}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        </div>
+                      )}
+                      <div className="p-6 flex flex-col flex-1">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-playfair text-2xl font-semibold text-foreground">{p.title}</h3>
+                          <span className="text-sm text-muted-foreground flex items-center gap-1 whitespace-nowrap ml-2">
+                            <Calendar className="w-4 h-4" />
+                            {p.date}
+                          </span>
+                        </div>
+                        <p className="text-primary font-medium mb-2">{p.venue}</p>
+                        <p className="text-foreground/70">{p.description}</p>
                       </div>
-                      <p className="text-primary font-medium mb-2">{p.venue}</p>
-                      <p className="text-foreground/70">{p.description}</p>
                     </div>
                   ))
                 ) : (
@@ -125,15 +165,40 @@ const Portfolio = () => {
                 <Award className="w-8 h-8 text-accent" />
                 Achievements & Experience
               </h2>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid gap-6">
                 {achievements.length > 0 ? (
                   achievements.map((a, index) => (
-                    <div key={index} className="bg-card p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
-                      <p className="text-lg text-foreground">{a}</p>
+                    <div key={index} className="bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col md:flex-row">
+                      {a.image && (
+                        <div className="w-full md:w-40 h-40 bg-muted flex-shrink-0 overflow-hidden">
+                          <img
+                            src={a.image}
+                            alt={a.title}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        </div>
+                      )}
+                      <div className="p-6 flex flex-col flex-1">
+                        <p className="text-lg text-foreground mb-4">{a.title}</p>
+                        {a.link && (
+                          <a
+                            href={a.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-primary hover:text-accent transition-colors font-medium mt-auto"
+                          >
+                            View Details
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   ))
                 ) : (
-                  <div className="col-span-2 bg-card p-8 rounded-lg border border-border text-center">
+                  <div className="bg-card p-8 rounded-lg border border-border text-center">
                     <p className="text-muted-foreground">Achievements data will be displayed here soon.</p>
                   </div>
                 )}

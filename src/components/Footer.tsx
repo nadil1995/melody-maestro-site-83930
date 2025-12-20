@@ -1,6 +1,13 @@
 import { Music, Facebook, Instagram, Youtube, Twitter, Linkedin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
+  const navLinks = [
+    { name: "About", path: "/about" },
+    // { name: "Services", path: "/services" },
+    { name: "Contact", path: "/contact" },
+  ];
+
   return (
     <footer className="bg-secondary text-secondary-foreground py-12">
       <div className="container mx-auto px-4">
@@ -19,21 +26,13 @@ const Footer = () => {
             <div>
               <h3 className="font-playfair text-lg font-bold mb-4">Quick Links</h3>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#about" className="text-secondary-foreground/80 hover:text-accent transition-colors">
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a href="#services" className="text-secondary-foreground/80 hover:text-accent transition-colors">
-                    Services
-                  </a>
-                </li>
-                <li>
-                  <a href="#contact" className="text-secondary-foreground/80 hover:text-accent transition-colors">
-                    Contact
-                  </a>
-                </li>
+                {navLinks.map((link) => (
+                  <li key={link.path}>
+                    <Link to={link.path} className="text-secondary-foreground/80 hover:text-accent transition-colors">
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -102,7 +101,7 @@ const Footer = () => {
           </div>
 
           <div className="border-t border-secondary-foreground/20 pt-8 text-center text-sm text-secondary-foreground/60">
-            <p>&copy; {new Date().getFullYear()} Professional Flautist. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Lflauto. All rights reserved.</p>
           </div>
         </div>
       </div>

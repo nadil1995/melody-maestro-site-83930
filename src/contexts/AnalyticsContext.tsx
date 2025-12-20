@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 
 export interface PageView {
   page: string;
@@ -141,7 +141,7 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     saveAnalytics(analytics);
   }, [analytics]);
 
-  const trackPageView = (page: string) => {
+  const trackPageView = useCallback((page: string) => {
     const pageView: PageView = {
       page,
       timestamp: Date.now(),
@@ -153,9 +153,9 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ...prev,
       pageViews: [...prev.pageViews, pageView],
     }));
-  };
+  }, []);
 
-  const trackFormSubmission = (data: Omit<FormSubmission, 'timestamp'>) => {
+  const trackFormSubmission = useCallback((data: Omit<FormSubmission, 'timestamp'>) => {
     const submission: FormSubmission = {
       ...data,
       timestamp: Date.now(),
@@ -165,9 +165,9 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ...prev,
       formSubmissions: [...prev.formSubmissions, submission],
     }));
-  };
+  }, []);
 
-  const trackUserAction = (action: string, page: string, details?: string) => {
+  const trackUserAction = useCallback((action: string, page: string, details?: string) => {
     const userAction: UserAction = {
       action,
       page,
@@ -179,11 +179,11 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ...prev,
       userActions: [...prev.userActions, userAction],
     }));
-  };
+  }, []);
 
-  const getAnalytics = () => analytics;
+  const getAnalytics = useCallback(() => analytics, [analytics]);
 
-  const clearAnalytics = () => {
+  const clearAnalytics = useCallback(() => {
     const freshData: AnalyticsData = {
       pageViews: [],
       formSubmissions: [],
@@ -193,18 +193,21 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
     setAnalytics(freshData);
     saveAnalytics(freshData);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      trackPageView,
+      trackFormSubmission,
+      trackUserAction,
+      getAnalytics,
+      clearAnalytics,
+    }),
+    [trackPageView, trackFormSubmission, trackUserAction, getAnalytics, clearAnalytics]
+  );
 
   return (
-    <AnalyticsContext.Provider
-      value={{
-        trackPageView,
-        trackFormSubmission,
-        trackUserAction,
-        getAnalytics,
-        clearAnalytics,
-      }}
-    >
+    <AnalyticsContext.Provider value={value}>
       {children}
     </AnalyticsContext.Provider>
   );
