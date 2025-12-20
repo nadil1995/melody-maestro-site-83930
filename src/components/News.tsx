@@ -26,7 +26,7 @@ const News = () => {
         // Check cache first
         const cachedNews = sessionStorage.getItem('news_data');
         const cacheTime = sessionStorage.getItem('news_cache_time');
-        const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+        const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 
         if (cachedNews && cacheTime && Date.now() - parseInt(cacheTime) < CACHE_DURATION) {
           setNews(JSON.parse(cachedNews));
@@ -34,7 +34,7 @@ const News = () => {
           return;
         }
 
-        const fetchWithTimeout = (url: string, timeout = 5000) => {
+        const fetchWithTimeout = (url: string, timeout = 2000) => {
           return Promise.race([
             fetch(url),
             new Promise((_, reject) =>
@@ -44,7 +44,7 @@ const News = () => {
         };
 
         const response = await fetchWithTimeout(
-          "https://docs.google.com/spreadsheets/d/e/2PACX-1vRa43uUOdznAbfcgo1glW47sZqr92y1mZ6mRvNfxWLUPYJbP7OB9J772W1FgFp5G-ddPACHunzutkNF/pubhtml"
+          "https://docs.google.com/spreadsheets/d/e/2PACX-1vRa43uUOdznAbfcgo1glW47sZqr92y1mZ6mRvNfxWLUPYJbP7OB9J772W1FgFp5G-ddPACHunzutkNF/pub?gid=0&single=true&output=csv"
         );
 
         const text = await (response as Response).text();
@@ -109,13 +109,22 @@ const News = () => {
               news.map((item, index) => (
                 <Card key={index} className="hover:shadow-lg transition-shadow overflow-hidden flex flex-col">
                   {item.image && (
-                    <div className="w-full h-48 overflow-hidden bg-muted">
+                    <div
+                      className="w-full bg-muted"
+                      style={{
+                        height: '60vh',
+                        backgroundImage: `url(${item.image})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    >
                       <img
                         src={item.image}
                         alt={item.title}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        className="hidden"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
+                          const parent = (e.target as HTMLImageElement).parentElement;
+                          if (parent) parent.style.display = "none";
                         }}
                       />
                     </div>
