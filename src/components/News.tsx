@@ -44,7 +44,7 @@ const News = () => {
         };
 
         const response = await fetchWithTimeout(
-          "https://docs.google.com/spreadsheets/d/e/2PACX-1vRFj7lqxRVSDEmlLHpEsDxmM7LgRgQDV22Iv_DkOTxNtEY9gyTePZexBihb6lBbPHIyW5Lf4uqXoFhf/pub?output=csv&gid=1"
+          "https://docs.google.com/spreadsheets/d/e/2PACX-1vRa43uUOdznAbfcgo1glW47sZqr92y1mZ6mRvNfxWLUPYJbP7OB9J772W1FgFp5G-ddPACHunzutkNF/pubhtml"
         );
 
         const text = await (response as Response).text();
