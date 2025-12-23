@@ -12,3 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /maduadmin
+
+Sitemap: https://www.lflauto.co.uk/sitemap.xml

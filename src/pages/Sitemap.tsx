@@ -142,22 +142,52 @@ ${sitemapEntries}
                 XML Sitemap
               </h2>
               <p className="text-foreground/70 mb-6">
-                Download the XML sitemap for search engine optimization. This file helps search engines
-                like Google, Bing, and others crawl and index all pages on our website.
+                The XML sitemap helps search engines like Google and Bing crawl and index all pages on our website.
+                You can submit this sitemap directly to Google Search Console and Bing Webmaster Tools.
               </p>
-              <button
-                onClick={handleDownloadSitemap}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-              >
-                <MapPin className="w-4 h-4" />
-                Download sitemap.xml
-              </button>
-              <p className="text-sm text-muted-foreground mt-4">
-                Alternatively, you can access the sitemap at:{" "}
-                <code className="bg-muted px-2 py-1 rounded text-xs">
-                  https://www.lflauto.co.uk/sitemap.xml
-                </code>
-              </p>
+
+              <div className="space-y-4 mb-6">
+                <div className="bg-muted/50 border border-border rounded p-4">
+                  <h3 className="font-semibold text-foreground mb-2">Direct Access</h3>
+                  <p className="text-sm text-foreground/70 mb-3">
+                    The sitemap is automatically available at:
+                  </p>
+                  <code className="block bg-background px-3 py-2 rounded border border-border text-xs overflow-auto mb-3">
+                    https://www.lflauto.co.uk/sitemap.xml
+                  </code>
+                  <a
+                    href="https://www.lflauto.co.uk/sitemap.xml"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-primary hover:text-accent transition-colors text-sm font-medium"
+                  >
+                    View Sitemap
+                    <MapPin className="w-4 h-4" />
+                  </a>
+                </div>
+
+                <div className="bg-muted/50 border border-border rounded p-4">
+                  <h3 className="font-semibold text-foreground mb-2">Download</h3>
+                  <p className="text-sm text-foreground/70 mb-3">
+                    Download a copy of the sitemap for local reference:
+                  </p>
+                  <button
+                    onClick={handleDownloadSitemap}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors font-medium text-sm"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    Download sitemap.xml
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded p-4">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Note:</strong> If you're using Google Search Console and the sitemap shows as "HTML" instead of "XML",
+                  please ensure your server is configured to serve .xml files with the correct MIME type (application/xml).
+                  This is typically handled by your hosting provider's web server configuration.
+                </p>
+              </div>
             </div>
 
             {/* SEO Information */}
