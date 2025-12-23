@@ -9,6 +9,7 @@ import About from "./pages/About";
 import Portfolio from "./pages/Portfolio";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
+import Sitemap from "./pages/Sitemap";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/sitemap" element={<Sitemap />} />
             {/* Hidden admin route - accessible only via direct URL */}
             <Route path="/maduadmin" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
