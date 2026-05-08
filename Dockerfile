@@ -1,27 +1,34 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
-
 RUN npm install
 
-# Copy all source files
 COPY . .
+
+ARG VITE_EMAILJS_SERVICE_ID
+ARG VITE_EMAILJS_TEMPLATE_ID
+ARG VITE_EMAILJS_PUBLIC_KEY
+ARG VITE_AWS_ACCESS_KEY_ID
+ARG VITE_AWS_SECRET_ACCESS_KEY
+ARG VITE_S3_BUCKET
+ARG VITE_S3_REGION
+ARG VITE_S3_FOLDER
+
+ENV VITE_EMAILJS_SERVICE_ID=$VITE_EMAILJS_SERVICE_ID
+ENV VITE_EMAILJS_TEMPLATE_ID=$VITE_EMAILJS_TEMPLATE_ID
+ENV VITE_EMAILJS_PUBLIC_KEY=$VITE_EMAILJS_PUBLIC_KEY
+ENV VITE_AWS_ACCESS_KEY_ID=$VITE_AWS_ACCESS_KEY_ID
+ENV VITE_AWS_SECRET_ACCESS_KEY=$VITE_AWS_SECRET_ACCESS_KEY
+ENV VITE_S3_BUCKET=$VITE_S3_BUCKET
+ENV VITE_S3_REGION=$VITE_S3_REGION
+ENV VITE_S3_FOLDER=$VITE_S3_FOLDER
 
 RUN npm run build
 
-# --- Production image ---
 FROM nginx:alpine
-
-# Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy custom nginx configuration for SPA routing
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Remove default nginx config
 RUN rm -f /etc/nginx/conf.d/default.conf.default
-
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
