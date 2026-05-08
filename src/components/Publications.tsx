@@ -12,6 +12,9 @@ interface Publication {
   link?: string;
 }
 
+const S3_PUBS = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts"}.s3.${import.meta.env.VITE_S3_REGION || "eu-west-2"}.amazonaws.com/data/publications.json`;
+const SHEET_PUBS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRFj7lqxRVSDEmlLHpEsDxmM7LgRgQDV22Iv_DkOTxNtEY9gyTePZexBihb6lBbPHIyW5Lf4uqXoFhf/pub?output=csv&gid=2";
+
 const Publications = () => {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,8 +25,14 @@ const Publications = () => {
     fetchedRef.current = true;
 
     const fetchPublications = async () => {
+      // Try S3 JSON first
       try {
-        // Check cache first
+        const s3Res = await fetch(`${S3_PUBS}?t=${Date.now()}`);
+        if (s3Res.ok) { setPublications(await s3Res.json()); setLoading(false); return; }
+      } catch {}
+
+      // Fall back to Google Sheets CSV
+      try {
         const cachedPubs = sessionStorage.getItem('publications_data');
         const cacheTime = sessionStorage.getItem('publications_cache_time');
         const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
@@ -76,11 +85,10 @@ const Publications = () => {
         sessionStorage.setItem('publications_cache_time', Date.now().toString());
 
         setPublications(pubsData);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching publications:", error);
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     fetchPublications();

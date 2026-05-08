@@ -12,6 +12,9 @@ interface NewsItem {
   image?: string;
 }
 
+const S3_NEWS = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts"}.s3.${import.meta.env.VITE_S3_REGION || "eu-west-2"}.amazonaws.com/data/news.json`;
+const SHEET_NEWS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRa43uUOdznAbfcgo1glW47sZqr92y1mZ6mRvNfxWLUPYJbP7OB9J772W1FgFp5G-ddPACHunzutkNF/pub?gid=0&single=true&output=csv";
+
 const News = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,64 +26,58 @@ const News = () => {
 
     const fetchNews = async () => {
       try {
-        // Check cache first
+        // Try S3 JSON first (managed via admin dashboard)
+        const s3Res = await fetch(`${S3_NEWS}?t=${Date.now()}`);
+        if (s3Res.ok) {
+          const data: NewsItem[] = await s3Res.json();
+          setNews(data);
+          setLoading(false);
+          return;
+        }
+      } catch {}
+
+      // Fall back to Google Sheets CSV
+      try {
         const cachedNews = sessionStorage.getItem('news_data');
         const cacheTime = sessionStorage.getItem('news_cache_time');
-        const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
-
+        const CACHE_DURATION = 2 * 60 * 1000;
         if (cachedNews && cacheTime && Date.now() - parseInt(cacheTime) < CACHE_DURATION) {
           setNews(JSON.parse(cachedNews));
           setLoading(false);
           return;
         }
 
-        const fetchWithTimeout = (url: string, timeout = 2000) => {
-          return Promise.race([
-            fetch(url),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Request timeout')), timeout)
-            )
-          ]);
-        };
-
-        const response = await fetchWithTimeout(
-          "https://docs.google.com/spreadsheets/d/e/2PACX-1vRa43uUOdznAbfcgo1glW47sZqr92y1mZ6mRvNfxWLUPYJbP7OB9J772W1FgFp5G-ddPACHunzutkNF/pub?gid=0&single=true&output=csv"
-        );
-
+        const response = await Promise.race([
+          fetch(SHEET_NEWS),
+          new Promise<never>((_, r) => setTimeout(() => r(new Error("timeout")), 4000)),
+        ]);
         const text = await (response as Response).text();
         const lines = text.trim().split("\n");
-
-        if (lines.length < 2) {
-          setNews([]);
-          setLoading(false);
-          return;
-        }
+        if (lines.length < 2) { setLoading(false); return; }
 
         const header = lines[0].split(",").map(h => h.trim());
         const newsData: NewsItem[] = lines.slice(1)
           .map(line => {
             const cells = line.split(",").map(c => c.trim());
             return {
-              title: cells[header.indexOf("title")] || cells[0] || "",
-              date: cells[header.indexOf("date")] || "",
-              category: cells[header.indexOf("category")] || "",
+              title:       cells[header.indexOf("title")]       || cells[0] || "",
+              date:        cells[header.indexOf("date")]        || "",
+              category:    cells[header.indexOf("category")]    || "",
               description: cells[header.indexOf("description")] || "",
-              location: cells[header.indexOf("location")] || "",
-              link: cells[header.indexOf("link")] || cells[header.indexOf("url")] || "",
-              image: cells[header.indexOf("image")] || cells[header.indexOf("image_url")] || ""
+              location:    cells[header.indexOf("location")]    || "",
+              link:        cells[header.indexOf("link")]        || cells[header.indexOf("url")] || "",
+              image:       cells[header.indexOf("image")]       || cells[header.indexOf("image_url")] || "",
             };
           })
           .filter(item => item.title);
 
         sessionStorage.setItem('news_data', JSON.stringify(newsData));
         sessionStorage.setItem('news_cache_time', Date.now().toString());
-
         setNews(newsData);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching news:", error);
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     fetchNews();

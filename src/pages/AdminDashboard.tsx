@@ -4,12 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
-import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2 } from 'lucide-react';
+import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2, BarChart2, Upload, ImagePlus, Table2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import S3ImageUploader from '@/components/S3ImageUploader';
+import GalleryManager from '@/components/GalleryManager';
+import DataManager from '@/components/DataManager';
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'media' | 'gallery' | 'data'>('analytics');
   const { getAnalytics, clearAnalytics } = useAnalytics();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -158,22 +162,84 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-playfair text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">LF Flauto Analytics & User Engagement</p>
+            <p className="text-muted-foreground">LF Flauto Analytics & Media Management</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleClearData}>
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear Data
-            </Button>
+            {activeTab === 'analytics' && (
+              <Button variant="outline" onClick={handleClearData}>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear Data
+              </Button>
+            )}
             <Button variant="outline" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
           </div>
         </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 mb-8 border border-border rounded-lg p-1 w-fit bg-muted/30">
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'analytics'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <BarChart2 className="w-4 h-4" />
+            Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab('media')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'media'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Upload className="w-4 h-4" />
+            Media Upload
+          </button>
+          <button
+            onClick={() => setActiveTab('gallery')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'gallery'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <ImagePlus className="w-4 h-4" />
+            Gallery
+          </button>
+          <button
+            onClick={() => setActiveTab('data')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'data'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Table2 className="w-4 h-4" />
+            Data
+          </button>
+        </div>
+
+        {/* Media Upload Tab */}
+        {activeTab === 'media' && <S3ImageUploader />}
+
+        {/* Gallery Tab */}
+        {activeTab === 'gallery' && <GalleryManager />}
+
+        {/* Data Tab */}
+        {activeTab === 'data' && <DataManager />}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && <>
 
         {/* Storage Warning */}
         {storageWarning && (
@@ -377,6 +443,8 @@ const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        </>}
       </div>
     </div>
   );

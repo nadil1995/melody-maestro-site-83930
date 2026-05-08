@@ -40,7 +40,26 @@ const Portfolio = () => {
           ]);
         };
 
-        // Replace these with your published CSV links or API endpoints
+        const S3_BASE = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts"}.s3.${import.meta.env.VITE_S3_REGION || "eu-west-2"}.amazonaws.com`;
+
+        // Try S3 JSON first for both datasets
+        const [s3Perf, s3Ach] = await Promise.all([
+          fetch(`${S3_BASE}/data/performances.json?t=${Date.now()}`).then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch(`${S3_BASE}/data/achievements.json?t=${Date.now()}`).then(r => r.ok ? r.json() : null).catch(() => null),
+        ]);
+
+        if (s3Perf || s3Ach) {
+          if (s3Perf) setPerformances(s3Perf);
+          if (s3Ach)  setAchievements(s3Ach);
+          if (!s3Perf || !s3Ach) {
+            // One S3 file missing — fall through to fetch the missing one from Sheets
+          } else {
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fall back to Google Sheets CSV
         const [perfRes, achRes] = await Promise.all([
           fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv"),
           fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vRFj7lqxRVSDEmlLHpEsDxmM7LgRgQDV22Iv_DkOTxNtEY9gyTePZexBihb6lBbPHIyW5Lf4uqXoFhf/pub?output=csv")
