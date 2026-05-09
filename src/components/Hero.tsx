@@ -87,18 +87,26 @@ const Hero = () => {
             transition={{ delay: 0.1, duration: 0.4 }}
           >
             <Music className="w-4 h-4 text-accent" />
-            <span className="text-sm font-medium text-background">Professional Flautist</span>
+            <span className="text-sm font-medium text-background">Professional Flautist & Composer · United Kingdom</span>
           </motion.div>
 
           <motion.h1
-            className="font-playfair text-5xl md:text-7xl font-bold mb-6 text-background leading-tight"
+            className="font-playfair text-5xl md:text-7xl font-bold mb-3 text-background leading-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.5 }}
           >
-            Classical Music
-            <span className="block text-accent bg-clip-text">Reimagined</span>
+            Lashikala Hettiarachchi
           </motion.h1>
+
+          <motion.p
+            className="font-playfair text-2xl md:text-3xl text-accent mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            Classical Music Reimagined
+          </motion.p>
 
           <motion.p
             className="text-xl md:text-2xl text-background/90 mb-8 max-w-2xl mx-auto leading-relaxed"
@@ -106,7 +114,7 @@ const Hero = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.25, duration: 0.5 }}
           >
-            Expert Western flute and Indian flute lessons in Croydon, London & Surrey. Bridging classical traditions through performance and dedicated music education
+            Sri Lankan flautist based in the UK. Western &amp; Indian flute lessons in Croydon, London &amp; Surrey. LTCL &amp; Visharad qualified.
           </motion.p>
 
           <motion.div

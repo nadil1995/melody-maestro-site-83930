@@ -35,8 +35,11 @@ const About = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-playfair text-4xl md:text-5xl font-bold text-foreground mb-4">
-              About the Artist
+            <h1 className="font-playfair text-4xl md:text-5xl font-bold text-foreground mb-2">
+              Lashikala Hettiarachchi
+            </h1>
+            <h2 className="font-playfair text-2xl text-muted-foreground mb-4">
+              Sri Lankan Flautist &amp; Composer based in the UK
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto" />
           </motion.div>
