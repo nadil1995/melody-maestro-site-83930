@@ -48,9 +48,19 @@ const Portfolio = () => {
           fetch(`${S3_BASE}/data/achievements.json?t=${Date.now()}`).then(r => r.ok ? r.json() : null).catch(() => null),
         ]);
 
+        const sortByDate = (arr: any[]) =>
+          [...arr].sort((a, b) => {
+            const da = new Date(a.date || "").getTime();
+            const db = new Date(b.date || "").getTime();
+            if (isNaN(da) && isNaN(db)) return 0;
+            if (isNaN(da)) return 1;
+            if (isNaN(db)) return -1;
+            return db - da;
+          });
+
         if (s3Perf || s3Ach) {
-          if (s3Perf) setPerformances(s3Perf);
-          if (s3Ach)  setAchievements(s3Ach);
+          if (s3Perf) setPerformances(sortByDate(s3Perf));
+          if (s3Ach)  setAchievements(sortByDate(s3Ach));
           if (!s3Perf || !s3Ach) {
             // One S3 file missing — fall through to fetch the missing one from Sheets
           } else {
@@ -108,8 +118,8 @@ const Portfolio = () => {
         }));
         sessionStorage.setItem('portfolio_cache_time', Date.now().toString());
 
-        setPerformances(performancesData);
-        setAchievements(achievementsData);
+        setPerformances(sortByDate(performancesData));
+        setAchievements(sortByDate(achievementsData));
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);

@@ -69,6 +69,7 @@ const SHEETS: SheetDef[] = [
     googleSheetUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRFj7lqxRVSDEmlLHpEsDxmM7LgRgQDV22Iv_DkOTxNtEY9gyTePZexBihb6lBbPHIyW5Lf4uqXoFhf/pub?output=csv",
     columns: [
       { key: "title", label: "Achievement", type: "textarea" },
+      { key: "date",  label: "Date",        type: "text" },
       { key: "image", label: "Image URL",   type: "url" },
       { key: "link",  label: "Link",        type: "url" },
     ],
