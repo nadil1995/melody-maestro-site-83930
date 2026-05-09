@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Pencil, Trash2, Save, RefreshCw, Loader2, ExternalLink, Upload, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, RefreshCw, Loader2, ExternalLink, Upload, X, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -260,16 +260,88 @@ function RowModal({
   );
 }
 
+// ── Google Apps Script sync helper ────────────────────────────────────────────
+
+async function postToAppsScript(
+  scriptUrl: string,
+  action: "append" | "update" | "delete",
+  row: Row,
+  rowIndex?: number,
+) {
+  // Use text/plain so the browser sends a simple (non-preflighted) POST — Apps Script receives it fine.
+  await fetch(scriptUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify({ action, row, rowIndex }),
+  });
+}
+
+const APPS_SCRIPT_CODE = `// ── Paste this into Extensions → Apps Script in your Google Sheet ──
+// Deploy as Web App: Execute as "Me", Who has access "Anyone"
+
+function doPost(e) {
+  try {
+    var payload  = JSON.parse(e.postData.contents);
+    var action   = payload.action;   // "append" | "update" | "delete"
+    var row      = payload.row;      // { title: "...", date: "...", ... }
+    var rowIndex = payload.rowIndex; // 0-based data row index (ignores header)
+
+    var sheet   = SpreadsheetApp.getActiveSheet();
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var rowData = headers.map(function(h) { return row[String(h).toLowerCase()] || row[h] || ""; });
+
+    if (action === "append") {
+      sheet.appendRow(rowData);
+    } else if (action === "update" && rowIndex != null) {
+      sheet.getRange(rowIndex + 2, 1, 1, rowData.length).setValues([rowData]);
+    } else if (action === "delete" && rowIndex != null) {
+      sheet.deleteRow(rowIndex + 2);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
 // ── Sheet editor ───────────────────────────────────────────────────────────────
 
 function SheetEditor({ sheet }: { sheet: SheetDef }) {
-  const [rows, setRows]       = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving]   = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [source, setSource]   = useState<"s3" | "unsaved" | "empty">("empty");
-  const [modal, setModal]     = useState<{ idx: number; row: Row } | null>(null);
+  const [rows, setRows]             = useState<Row[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [saving, setSaving]         = useState(false);
+  const [syncing, setSyncing]       = useState(false);
+  const [source, setSource]         = useState<"s3" | "unsaved" | "empty">("empty");
+  const [modal, setModal]           = useState<{ idx: number; row: Row } | null>(null);
+  const [showConfig, setShowConfig] = useState(false);
+  const [scriptUrl, setScriptUrlState] = useState(
+    () => localStorage.getItem(`gs_script_${sheet.id}`) ?? ""
+  );
+  const [scriptInput, setScriptInput] = useState(scriptUrl);
+  const [copied, setCopied]         = useState(false);
   const { toast } = useToast();
+
+  const saveScriptUrl = () => {
+    localStorage.setItem(`gs_script_${sheet.id}`, scriptInput);
+    setScriptUrlState(scriptInput);
+    toast({ title: "Script URL saved" });
+  };
+
+  const copyCode = () => {
+    navigator.clipboard.writeText(APPS_SCRIPT_CODE);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const syncSheet = async (action: "append" | "update" | "delete", row: Row, rowIndex?: number) => {
+    if (!scriptUrl) return;
+    try { await postToAppsScript(scriptUrl, action, row, rowIndex); } catch {}
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -303,17 +375,22 @@ function SheetEditor({ sheet }: { sheet: SheetDef }) {
     setSaving(false);
   };
 
-  const handleSaveRow = (row: Row) => {
+  const handleSaveRow = async (row: Row) => {
     if (!modal) return;
-    setRows(prev => modal.idx === -1 ? [...prev, row] : prev.map((r, i) => i === modal.idx ? row : r));
+    const isNew = modal.idx === -1;
+    setRows(prev => isNew ? [...prev, row] : prev.map((r, i) => i === modal.idx ? row : r));
     setSource("unsaved");
     setModal(null);
+    await syncSheet(isNew ? "append" : "update", row, isNew ? undefined : modal.idx);
+    if (scriptUrl) toast({ title: isNew ? "Row added to Google Sheet" : "Row updated in Google Sheet", description: "Also save to S3 to update the live site" });
   };
 
-  const deleteRow = (idx: number) => {
+  const deleteRow = async (idx: number) => {
     if (!window.confirm("Delete this row?")) return;
+    await syncSheet("delete", rows[idx], idx);
     setRows(prev => prev.filter((_, i) => i !== idx));
     setSource("unsaved");
+    if (scriptUrl) toast({ title: "Row deleted from Google Sheet" });
   };
 
   const emptyRow = Object.fromEntries(sheet.columns.map(c => [c.key, ""]));
@@ -326,6 +403,58 @@ function SheetEditor({ sheet }: { sheet: SheetDef }) {
 
   return (
     <div className="space-y-4">
+
+      {/* Google Sheets Sync Config */}
+      <div className="border border-border rounded-lg overflow-hidden">
+        <button
+          onClick={() => setShowConfig(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground bg-muted/30 hover:bg-muted/50 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Google Sheets Write-back
+            {scriptUrl
+              ? <span className="px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">Connected</span>
+              : <span className="px-1.5 py-0.5 rounded text-xs bg-muted text-muted-foreground">Not configured</span>
+            }
+          </span>
+          {showConfig ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+
+        {showConfig && (
+          <div className="p-4 space-y-4 bg-background border-t border-border">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Step 1 — Add the Apps Script to your Google Sheet</p>
+              <p className="text-xs text-muted-foreground">Open your Google Sheet → Extensions → Apps Script → paste the code below → Save → Deploy as Web App (Execute as: Me, Who has access: Anyone).</p>
+              <div className="relative">
+                <pre className="bg-muted rounded-lg p-3 text-xs overflow-x-auto max-h-40 font-mono leading-relaxed">{APPS_SCRIPT_CODE}</pre>
+                <button
+                  onClick={copyCode}
+                  className="absolute top-2 right-2 px-2 py-1 rounded text-xs bg-background border border-border hover:bg-muted transition-colors"
+                >{copied ? "Copied!" : "Copy"}</button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Step 2 — Paste the deployment URL</p>
+              <p className="text-xs text-muted-foreground">After deploying, copy the Web App URL and paste it here. It looks like <code className="bg-muted px-1 rounded">https://script.google.com/macros/s/…/exec</code></p>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="https://script.google.com/macros/s/…/exec"
+                  value={scriptInput}
+                  onChange={e => setScriptInput(e.target.value)}
+                  className="flex-1 text-xs font-mono"
+                />
+                <Button size="sm" onClick={saveScriptUrl}>Save URL</Button>
+                {scriptUrl && (
+                  <Button size="sm" variant="outline" onClick={() => { setScriptInput(""); localStorage.removeItem(`gs_script_${sheet.id}`); setScriptUrlState(""); }}>Clear</Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
