@@ -68,14 +68,16 @@ async function getGeoInfo(): Promise<{ ip: string; country: string; city: string
   try {
     const cached = sessionStorage.getItem("rt_geo");
     if (cached) return JSON.parse(cached);
-    const res = await fetch("https://freeipapi.com/api/json", {
-      signal: AbortSignal.timeout(4000),
+
+    // ipapi.co supports browser CORS requests
+    const res = await fetch("https://ipapi.co/json/", {
+      signal: AbortSignal.timeout(5000),
     });
     const d = await res.json();
     const geo = {
-      ip:      d.ipAddress  || "unknown",
-      country: d.countryName || "Unknown",
-      city:    d.cityName    || "Unknown",
+      ip:      d.ip           || "unknown",
+      country: d.country_name || "Unknown",
+      city:    d.city         || "Unknown",
     };
     sessionStorage.setItem("rt_geo", JSON.stringify(geo));
     return geo;
