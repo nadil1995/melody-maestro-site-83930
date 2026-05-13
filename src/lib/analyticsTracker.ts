@@ -1,8 +1,11 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const BUCKET = import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts";
-const REGION = import.meta.env.VITE_S3_REGION || "eu-west-2";
+const BUCKET   = import.meta.env.VITE_S3_BUCKET  || "geoapp-build-artifacts";
+const REGION   = import.meta.env.VITE_S3_REGION  || "eu-west-2";
+const S3_BASE  = `https://${BUCKET}.s3.${REGION}.amazonaws.com`;
+const FEED_KEY = "analytics/live-feed.json";
+const MAX_EVENTS = 500;
 
 export interface VisitEvent {
   sessionId: string;
@@ -28,20 +31,20 @@ function getDevice(): "Mobile" | "Tablet" | "Desktop" {
 
 function getBrowser(): string {
   const ua = navigator.userAgent;
-  if (ua.includes("Edg")) return "Edge";
-  if (ua.includes("Chrome")) return "Chrome";
+  if (ua.includes("Edg"))     return "Edge";
+  if (ua.includes("Chrome"))  return "Chrome";
   if (ua.includes("Firefox")) return "Firefox";
-  if (ua.includes("Safari")) return "Safari";
+  if (ua.includes("Safari"))  return "Safari";
   return "Other";
 }
 
 function getOS(): string {
   const ua = navigator.userAgent;
-  if (/iphone|ipad/i.test(ua)) return "iOS";
-  if (/android/i.test(ua)) return "Android";
-  if (/windows/i.test(ua)) return "Windows";
-  if (/mac/i.test(ua)) return "macOS";
-  if (/linux/i.test(ua)) return "Linux";
+  if (/iphone|ipad/i.test(ua))  return "iOS";
+  if (/android/i.test(ua))      return "Android";
+  if (/windows/i.test(ua))      return "Windows";
+  if (/mac/i.test(ua))          return "macOS";
+  if (/linux/i.test(ua))        return "Linux";
   return "Other";
 }
 
@@ -70,9 +73,9 @@ async function getGeoInfo(): Promise<{ ip: string; country: string; city: string
     });
     const d = await res.json();
     const geo = {
-      ip: d.ipAddress || "unknown",
+      ip:      d.ipAddress  || "unknown",
       country: d.countryName || "Unknown",
-      city: d.cityName || "Unknown",
+      city:    d.cityName    || "Unknown",
     };
     sessionStorage.setItem("rt_geo", JSON.stringify(geo));
     return geo;
@@ -85,7 +88,7 @@ function buildS3Client() {
   return new S3Client({
     region: REGION,
     credentials: {
-      accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID || "",
+      accessKeyId:     import.meta.env.VITE_AWS_ACCESS_KEY_ID     || "",
       secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || "",
     },
     requestChecksumCalculation: "WHEN_REQUIRED" as const,
@@ -93,43 +96,59 @@ function buildS3Client() {
   });
 }
 
+async function readFeed(): Promise<VisitEvent[]> {
+  try {
+    const res = await fetch(`${S3_BASE}/${FEED_KEY}?t=${Date.now()}`);
+    return res.ok ? res.json() : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeFeed(events: VisitEvent[]): Promise<void> {
+  const client = buildS3Client();
+  const blob   = new Blob([JSON.stringify(events)], { type: "application/json" });
+  const url    = await getSignedUrl(
+    client,
+    new PutObjectCommand({ Bucket: BUCKET, Key: FEED_KEY }),
+    { expiresIn: 300 }
+  );
+  await fetch(url, {
+    method: "PUT",
+    body:   blob,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 export async function trackVisit(page: string): Promise<void> {
   try {
-    const geo = await getGeoInfo();
+    const geo       = await getGeoInfo();
     const sessionId = getSessionId();
-    const referrer = document.referrer;
 
     const event: VisitEvent = {
       sessionId,
       visitorId: `v-${geo.ip.replace(/[.:]/g, "")}`,
-      ip: geo.ip,
-      country: geo.country,
-      city: geo.city,
-      device: getDevice(),
-      browser: getBrowser(),
-      os: getOS(),
-      source: getSource(referrer),
-      referrer,
+      ip:        geo.ip,
+      country:   geo.country,
+      city:      geo.city,
+      device:    getDevice(),
+      browser:   getBrowser(),
+      os:        getOS(),
+      source:    getSource(document.referrer),
+      referrer:  document.referrer,
       page,
       timestamp: Date.now(),
     };
 
-    const dateStr = new Date().toISOString().slice(0, 10);
-    const key = `analytics/events/${dateStr}/${event.timestamp}-${sessionId.slice(-5)}.json`;
-
-    const client = buildS3Client();
-    const blob = new Blob([JSON.stringify(event)], { type: "application/json" });
-    const url = await getSignedUrl(
-      client,
-      new PutObjectCommand({ Bucket: BUCKET, Key: key }),
-      { expiresIn: 300 }
-    );
-    await fetch(url, {
-      method: "PUT",
-      body: blob,
-      headers: { "Content-Type": "application/json" },
-    });
+    const existing = await readFeed();
+    const updated  = [event, ...existing].slice(0, MAX_EVENTS);
+    await writeFeed(updated);
   } catch {
     // Silent — analytics must never break the site
   }
+}
+
+// Called by admin dashboard to read all events
+export async function readLiveFeed(): Promise<VisitEvent[]> {
+  return readFeed();
 }
