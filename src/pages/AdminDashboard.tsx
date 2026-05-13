@@ -4,16 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
-import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2, BarChart2, Upload, ImagePlus, Table2 } from 'lucide-react';
+import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2, BarChart2, Upload, ImagePlus, Table2, Wifi } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import S3ImageUploader from '@/components/S3ImageUploader';
 import GalleryManager from '@/components/GalleryManager';
 import DataManager from '@/components/DataManager';
+import LiveAnalytics from '@/components/LiveAnalytics';
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'analytics' | 'media' | 'gallery' | 'data'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'live' | 'media' | 'gallery' | 'data'>('live');
   const { getAnalytics, clearAnalytics } = useAnalytics();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -182,7 +183,18 @@ const AdminDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-8 border border-border rounded-lg p-1 w-fit bg-muted/30">
+        <div className="flex gap-1 mb-8 border border-border rounded-lg p-1 w-fit bg-muted/30 flex-wrap">
+          <button
+            onClick={() => setActiveTab('live')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'live'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Wifi className="w-4 h-4" />
+            Live
+          </button>
           <button
             onClick={() => setActiveTab('analytics')}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -228,6 +240,9 @@ const AdminDashboard = () => {
             Data
           </button>
         </div>
+
+        {/* Live Analytics Tab */}
+        {activeTab === 'live' && <LiveAnalytics />}
 
         {/* Media Upload Tab */}
         {activeTab === 'media' && <S3ImageUploader />}
