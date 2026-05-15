@@ -109,15 +109,15 @@ async function readFeed(): Promise<VisitEvent[]> {
 
 async function writeFeed(events: VisitEvent[]): Promise<void> {
   const client = buildS3Client();
-  const blob   = new Blob([JSON.stringify(events)], { type: "application/json" });
+  const body   = JSON.stringify(events);
   const url    = await getSignedUrl(
     client,
-    new PutObjectCommand({ Bucket: BUCKET, Key: FEED_KEY }),
+    new PutObjectCommand({ Bucket: BUCKET, Key: FEED_KEY, ContentType: "application/json" }),
     { expiresIn: 300 }
   );
   await fetch(url, {
     method: "PUT",
-    body:   blob,
+    body,
     headers: { "Content-Type": "application/json" },
   });
 }

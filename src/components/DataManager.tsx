@@ -96,9 +96,13 @@ function buildClient() {
 
 async function s3Save(key: string, data: Row[]) {
   const client = buildClient();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = await getSignedUrl(client, new PutObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn: 3600 });
-  const res = await fetch(url, { method: "PUT", body: blob, headers: { "Content-Type": "application/json" } });
+  const body = JSON.stringify(data, null, 2);
+  const url = await getSignedUrl(
+    client,
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: "application/json" }),
+    { expiresIn: 3600 }
+  );
+  const res = await fetch(url, { method: "PUT", body, headers: { "Content-Type": "application/json" } });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
     const code = txt.match(/<Code>([^<]+)<\/Code>/)?.[1] ?? res.status;
@@ -107,11 +111,18 @@ async function s3Save(key: string, data: Row[]) {
   }
 }
 
-async function s3Load(key: string): Promise<Row[] | null> {
+async function s3Load(key: string): Promise<{ data: Row[] | null; error: string | null }> {
   try {
     const res = await fetch(`${S3_BASE}/${key}?t=${Date.now()}`);
-    return res.ok ? res.json() : null;
-  } catch { return null; }
+    if (res.ok) return { data: await res.json(), error: null };
+    if (res.status === 404) return { data: null, error: null }; // file doesn't exist yet — not an error
+    const txt = await res.text().catch(() => "");
+    const code = txt.match(/<Code>([^<]+)<\/Code>/)?.[1] ?? res.status;
+    const msg  = txt.match(/<Message>([^<]+)<\/Message>/)?.[1] ?? res.statusText;
+    return { data: null, error: `${code}: ${msg}` };
+  } catch (e) {
+    return { data: null, error: String(e) };
+  }
 }
 
 function parseCSV(text: string, columns: ColumnDef[]): Row[] {
@@ -137,7 +148,11 @@ async function uploadImageToS3(file: File): Promise<string> {
   const client = buildClient();
   const ext = file.name.split(".").pop() ?? "jpg";
   const key = `data/images/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const url = await getSignedUrl(client, new PutObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn: 3600 });
+  const url = await getSignedUrl(
+    client,
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: file.type }),
+    { expiresIn: 3600 }
+  );
   const res = await fetch(url, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
@@ -345,7 +360,8 @@ function SheetEditor({ sheet }: { sheet: SheetDef }) {
 
   useEffect(() => {
     setLoading(true);
-    s3Load(sheet.s3Key).then(data => {
+    s3Load(sheet.s3Key).then(({ data, error }) => {
+      if (error) toast({ title: "Failed to load from S3", description: error, variant: "destructive" });
       if (data?.length) { setRows(data); setSource("s3"); }
       else              { setRows([]);   setSource("empty"); }
       setLoading(false);
