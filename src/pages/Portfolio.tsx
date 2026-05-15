@@ -17,119 +17,26 @@ const Portfolio = () => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
 
-    const fetchData = async () => {
-      try {
-        // Check cache first
-        const cachedData = sessionStorage.getItem('portfolio_data');
-        const cacheTime = sessionStorage.getItem('portfolio_cache_time');
-        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    const S3_BASE = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts"}.s3.${import.meta.env.VITE_S3_REGION || "eu-west-2"}.amazonaws.com`;
 
-        if (cachedData && cacheTime && Date.now() - parseInt(cacheTime) < CACHE_DURATION) {
-          const { performances: cachedPerf, achievements: cachedAch } = JSON.parse(cachedData);
-          setPerformances(cachedPerf);
-          setAchievements(cachedAch);
-          setLoading(false);
-          return;
-        }
+    const sortByDate = (arr: any[]) =>
+      [...arr].sort((a, b) => {
+        const da = new Date(a.date || "").getTime();
+        const db = new Date(b.date || "").getTime();
+        if (isNaN(da) && isNaN(db)) return 0;
+        if (isNaN(da)) return 1;
+        if (isNaN(db)) return -1;
+        return db - da;
+      });
 
-        // Fetch with timeout
-        const fetchWithTimeout = (url: string, timeout = 8000) => {
-          return Promise.race([
-            fetch(url),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Request timeout')), timeout)
-            )
-          ]);
-        };
-
-        const S3_BASE = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts"}.s3.${import.meta.env.VITE_S3_REGION || "eu-west-2"}.amazonaws.com`;
-
-        // Try S3 JSON first for both datasets
-        const [s3Perf, s3Ach] = await Promise.all([
-          fetch(`${S3_BASE}/data/performances.json?t=${Date.now()}`).then(r => r.ok ? r.json() : null).catch(() => null),
-          fetch(`${S3_BASE}/data/achievements.json?t=${Date.now()}`).then(r => r.ok ? r.json() : null).catch(() => null),
-        ]);
-
-        const sortByDate = (arr: any[]) =>
-          [...arr].sort((a, b) => {
-            const da = new Date(a.date || "").getTime();
-            const db = new Date(b.date || "").getTime();
-            if (isNaN(da) && isNaN(db)) return 0;
-            if (isNaN(da)) return 1;
-            if (isNaN(db)) return -1;
-            return db - da;
-          });
-
-        if (s3Perf || s3Ach) {
-          if (s3Perf) setPerformances(sortByDate(s3Perf));
-          if (s3Ach)  setAchievements(sortByDate(s3Ach));
-          if (!s3Perf || !s3Ach) {
-            // One S3 file missing — fall through to fetch the missing one from Sheets
-          } else {
-            setLoading(false);
-            return;
-          }
-        }
-
-        // Fall back to Google Sheets CSV
-        const [perfRes, achRes] = await Promise.all([
-          fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vSm7_VKWjou_53pSM0zc1M1FRP0GeduboWNrAfhmFjrAlmTC3UPHgJy_MHKACH8dvVTwgNctjqvwqSH/pub?output=csv"),
-          fetchWithTimeout("https://docs.google.com/spreadsheets/d/e/2PACX-1vRFj7lqxRVSDEmlLHpEsDxmM7LgRgQDV22Iv_DkOTxNtEY9gyTePZexBihb6lBbPHIyW5Lf4uqXoFhf/pub?output=csv")
-        ]);
-
-        const perfText = await (perfRes as Response).text();
-        const achText = await (achRes as Response).text();
-
-        // Parse CSV manually (simple split logic)
-        const parseCSV = (str: string) => {
-          const lines = str.trim().split("\n");
-          if (lines.length < 2) return [];
-
-          const header = lines[0].split(",").map(h => h.trim());
-          const rows = lines.slice(1);
-
-          return rows
-            .map(row => {
-              const cells = row.split(",").map(c => c.trim());
-              return Object.fromEntries(header.map((key, i) => [key, cells[i] || ""]));
-            })
-            .filter(row => Object.values(row).some(val => val)); // Filter empty rows
-        };
-
-        const performancesData = parseCSV(perfText)
-          .map((r: any) => ({
-            title: r.title || r.Title || "",
-            date: r.date || r.Date || "",
-            venue: r.venue || r.Venue || "",
-            description: r.description || r.Description || "",
-            image: r.image || r.Image || r.image_url || r.imageUrl || r.thumbnail || r.Thumbnail || ""
-          }))
-          .filter((p: any) => p.title);
-        const achievementsData = parseCSV(achText)
-          .map((r: any) => ({
-            title: r.achievement || r.Achievement || "",
-            image: r.image || r.Image || r.image_url || r.imageUrl || r.image_link || r.imageLink || "",
-            link: r.link || r.Link || r.url || r.URL || r.external_link || r.externalLink || ""
-          }))
-          .filter((a: any) => a.title);
-
-        // Cache the data
-        sessionStorage.setItem('portfolio_data', JSON.stringify({
-          performances: performancesData,
-          achievements: achievementsData
-        }));
-        sessionStorage.setItem('portfolio_cache_time', Date.now().toString());
-
-        setPerformances(sortByDate(performancesData));
-        setAchievements(sortByDate(achievementsData));
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false); // Set loading to false even on error
-      }
-    };
-
-    fetchData();
+    Promise.all([
+      fetch(`${S3_BASE}/data/performances.json?t=${Date.now()}`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${S3_BASE}/data/achievements.json?t=${Date.now()}`).then(r => r.ok ? r.json() : []).catch(() => []),
+    ]).then(([perf, ach]) => {
+      setPerformances(sortByDate(perf));
+      setAchievements(sortByDate(ach));
+      setLoading(false);
+    });
   }, []);
 
   if (loading) return <div className="p-10 text-center text-muted-foreground">Loading portfolio...</div>;
