@@ -33,6 +33,12 @@ const MyWork = ({ videos = [] }: MyWorkProps) => {
       title: "Raag Brindavani",
       description: "indian flute performance of Raag Brindavani",
     },
+    
+    {
+      id: "LywOLtgJJqk",
+      title: "Ambivalence of Life - Flute + String Trio by Lashikala Hettiarachchi",
+      description: "",
+    },
   ];
 
   const displayVideos = videos.length > 0 ? videos : defaultVideos;

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MapPin, ExternalLink } from "lucide-react";
 
@@ -17,12 +17,8 @@ const S3_NEWS = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artif
 const News = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const fetchedRef = useRef(false);
 
   useEffect(() => {
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
-
     fetch(`${S3_NEWS}?t=${Date.now()}`)
       .then(r => r.ok ? r.json() : [])
       .catch(() => [])

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Music, Award, Calendar, ExternalLink } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
@@ -8,27 +8,24 @@ const Portfolio = () => {
   usePageTracking("Portfolio");
   useCanonical("/portfolio");
 
-  const [performances, setPerformances] = useState([]);
-  const [achievements, setAchievements] = useState([]);
+  const [performances, setPerformances] = useState<any[]>([]);
+  const [achievements, setAchievements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const fetchedRef = useRef(false);
 
-  useEffect(() => {
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
+  const S3_BASE = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts"}.s3.${import.meta.env.VITE_S3_REGION || "eu-west-2"}.amazonaws.com`;
 
-    const S3_BASE = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts"}.s3.${import.meta.env.VITE_S3_REGION || "eu-west-2"}.amazonaws.com`;
+  const sortByDate = (arr: any[]) =>
+    [...arr].sort((a, b) => {
+      const da = new Date(a.date || "").getTime();
+      const db = new Date(b.date || "").getTime();
+      if (isNaN(da) && isNaN(db)) return 0;
+      if (isNaN(da)) return 1;
+      if (isNaN(db)) return -1;
+      return db - da;
+    });
 
-    const sortByDate = (arr: any[]) =>
-      [...arr].sort((a, b) => {
-        const da = new Date(a.date || "").getTime();
-        const db = new Date(b.date || "").getTime();
-        if (isNaN(da) && isNaN(db)) return 0;
-        if (isNaN(da)) return 1;
-        if (isNaN(db)) return -1;
-        return db - da;
-      });
-
+  const loadData = () => {
+    setLoading(true);
     Promise.all([
       fetch(`${S3_BASE}/data/performances.json?t=${Date.now()}`).then(r => r.ok ? r.json() : []).catch(() => []),
       fetch(`${S3_BASE}/data/achievements.json?t=${Date.now()}`).then(r => r.ok ? r.json() : []).catch(() => []),
@@ -37,7 +34,9 @@ const Portfolio = () => {
       setAchievements(sortByDate(ach));
       setLoading(false);
     });
-  }, []);
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   if (loading) return <div className="p-10 text-center text-muted-foreground">Loading portfolio...</div>;
 
