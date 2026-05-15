@@ -57,17 +57,16 @@ const About = () => {
                 I am a classically trained flautist and composer based in the United Kingdom, dedicated to exploring diverse musical traditions and creating meaningful connections through music.
 
               </motion.p>
-              <motion.p
-                className="text-lg text-foreground/80 leading-relaxed"
+              <motion.div
+                className="space-y-2"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
-              <h2><strong>  Education </strong></h2>
-                I hold a Master's degree in International Music Management from the University for the Creative Arts, UK, and a Bachelor's degree from the University of the Visual and Performing Arts, Sri Lanka. My qualifications include the Licentiate of Trinity College London (LTCL) and Visharad from Bhatkhande Sangeet Vidyapith, Lucknow.
-
-              </motion.p>
+                <h2 className="font-playfair text-xl font-bold text-foreground">Education</h2>
+                <p className="text-lg text-foreground/80 leading-relaxed">I hold a Master's degree in International Music Management from the University for the Creative Arts, UK, and a Bachelor's degree from the University of the Visual and Performing Arts, Sri Lanka. My qualifications include the Licentiate of Trinity College London (LTCL) and Visharad from Bhatkhande Sangeet Vidyapith, Lucknow.</p>
+              </motion.div>
 
               <motion.div
                 className="flex justify-center md:justify-center"
@@ -83,60 +82,56 @@ const About = () => {
                 />
               </motion.div>
 
-              <motion.p
-                className="text-lg text-foreground/80 leading-relaxed"
+              <motion.div
+                className="space-y-2"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-               <h1><strong> Western Classical Music </strong></h1>
-               Currently, I perform as a member of the Just Flute Orchestra, UK. My career in Sri Lanka includes serving as Principal Flautist for the Gustav Mahler Society and the National Unity Orchestra, as well as performing with the National Symphony Orchestra as a part-time member. I began my orchestral journey with the Colombo Wind Orchestra and the National Youth Orchestra.
-
-              </motion.p>
-              <motion.p
-                className="text-lg text-foreground/80 leading-relaxed"
+                <h2 className="font-playfair text-xl font-bold text-foreground">Western Classical Music</h2>
+                <p className="text-lg text-foreground/80 leading-relaxed">Currently, I perform as a member of the <a href="https://www.justflutes.com/apps/flute-ensemble-finder/just-flutes-community-flute-choir" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-accent transition-colors">Just Flute Orchestra, UK</a>. My career in Sri Lanka includes serving as Principal Flautist for the Gustav Mahler Society and the National Unity Orchestra, as well as performing with the National Symphony Orchestra as a part-time member. I began my orchestral journey with the Colombo Wind Orchestra and the National Youth Orchestra.</p>
+              </motion.div>
+              <motion.div
+                className="space-y-2"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <h1><strong> Indian Classical Music </strong></h1>
-               I have been recognized four times by the National Youth Awards (2012, 2015, 2017, and 2019), receiving first place in the North Indian Classical Instrumental - Flute category. This tradition remains central to my artistic practice.
-
-              </motion.p>
-              <motion.p
-                className="text-lg text-foreground/80 leading-relaxed"
+                <h2 className="font-playfair text-xl font-bold text-foreground">Indian Classical Music</h2>
+                <p className="text-lg text-foreground/80 leading-relaxed">I have been recognized four times by the National Youth Awards (2012, 2015, 2017, and 2019), receiving first place in the North Indian Classical Instrumental - Flute category. This tradition remains central to my artistic practice.</p>
+              </motion.div>
+              <motion.div
+                className="space-y-2"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <h1><strong> Light Music & Media </strong></h1>
-              I have contributed to Sri Lanka's light music industry, performing as a flautist for television channels including Rupavahini and providing artist backing for various productions. As a member of Viraaga Orchestra I am dedicated to bring Sri Lankan music for British Sri Lankans who lives in UK.
-
-              </motion.p>
-              <motion.p
-                className="text-lg text-foreground/80 leading-relaxed"
+                <h2 className="font-playfair text-xl font-bold text-foreground">Light Music &amp; Media</h2>
+                <p className="text-lg text-foreground/80 leading-relaxed">I have contributed to Sri Lanka's light music industry, performing as a flautist for television channels including Rupavahini and providing artist backing for various productions. As a member of <a href="https://www.viraagastudio.com/about-us" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-accent transition-colors">Viraaga Orchestra</a> I am dedicated to bring Sri Lankan music for British Sri Lankans who live in the UK.</p>
+              </motion.div>
+              <motion.div
+                className="space-y-2"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.5 }}
               >
-                <h1><strong> Compositions & Arrangements </strong></h1>
-              As a composer, I create works that bridge Eastern and Western musical traditions. My original composition "Ambivalence of Life" blends Indian classical ragas with Western harmony, written for flute, violin, viola, and cello. I have also arranged the famous Sri Lankan song "Me Nagaraya" for four bamboo flutes in SATB formation, celebrating my cultural heritage through creative interpretation.
-
-              </motion.p>
-              <motion.p
-                className="text-lg text-foreground/80 leading-relaxed"
+                <h2 className="font-playfair text-xl font-bold text-foreground">Compositions &amp; Arrangements</h2>
+                <p className="text-lg text-foreground/80 leading-relaxed">As a composer, I create works that bridge Eastern and Western musical traditions. My original composition "Ambivalence of Life" blends Indian classical ragas with Western harmony, written for flute, violin, viola, and cello. I have also arranged the famous Sri Lankan song "Me Nagaraya" for four bamboo flutes in SATB formation, celebrating my cultural heritage through creative interpretation.</p>
+              </motion.div>
+              <motion.div
+                className="space-y-2"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.6 }}
               >
-                <h1><strong> Research & Academic Interests </strong></h1>
-              My academic interests have led me to complete two research projects: "Identification and Comparison of Thaats and Church Modes" and "Evaluating Environmental Sustainability Practices in the Live Music Industry in Sri Lanka."
-              </motion.p>
+                <h2 className="font-playfair text-xl font-bold text-foreground">Research &amp; Academic Interests</h2>
+                <p className="text-lg text-foreground/80 leading-relaxed">My academic interests have led me to complete two research projects: "Identification and Comparison of Thaats and Church Modes" and "Evaluating Environmental Sustainability Practices in the Live Music Industry in Sri Lanka."</p>
+              </motion.div>
 
               <motion.div
                 className="flex justify-center md:justify-center"
@@ -152,16 +147,16 @@ const About = () => {
                 />
               </motion.div>
 
-              <motion.p
-                className="text-lg text-foreground/80 leading-relaxed"
+              <motion.div
+                className="space-y-2"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.7 }}
               >
-                <h1><strong> Ambition </strong></h1>
-My ambition is to share my musical knowledge and contribute to the wider community by creating works that celebrate the unique characteristics of South Asian music while integrating them with Western musical traditions. Through composition, performance, and collaboration, I aim to build bridges between cultures and create meaningful musical experiences that honor both traditions.
-              </motion.p>
+                <h2 className="font-playfair text-xl font-bold text-foreground">Ambition</h2>
+                <p className="text-lg text-foreground/80 leading-relaxed">My ambition is to share my musical knowledge and contribute to the wider community by creating works that celebrate the unique characteristics of South Asian music while integrating them with Western musical traditions. Through composition, performance, and collaboration, I aim to build bridges between cultures and create meaningful musical experiences that honor both traditions.</p>
+              </motion.div>
 
 
             </div>
