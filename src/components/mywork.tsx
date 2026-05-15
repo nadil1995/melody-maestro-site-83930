@@ -37,7 +37,7 @@ const MyWork = ({ videos = [] }: MyWorkProps) => {
     {
       id: "LywOLtgJJqk",
       title: "Ambivalence of Life - Flute + String Trio by Lashikala Hettiarachchi",
-      description: "",
+      description: "Original composition for flute and string trio exploring the ambivalence of life, blending Western and South Asian musical elements.",
     },
   ];
 
