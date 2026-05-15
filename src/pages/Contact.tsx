@@ -9,10 +9,11 @@ import emailjs from '@emailjs/browser';
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
-
+import { useCanonical } from "@/hooks/useCanonical";
 
 const Contact = () => {
   usePageTracking("Contact");
+  useCanonical("/contact");
   const { toast } = useToast();
   const { trackFormSubmission, trackUserAction } = useAnalytics();
   const [formData, setFormData] = useState({

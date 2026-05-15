@@ -2,9 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import { Music, Award, Calendar, ExternalLink } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
+import { useCanonical } from "@/hooks/useCanonical";
 
 const Portfolio = () => {
   usePageTracking("Portfolio");
+  useCanonical("/portfolio");
 
   const [performances, setPerformances] = useState([]);
   const [achievements, setAchievements] = useState([]);

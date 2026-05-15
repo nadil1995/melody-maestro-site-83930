@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
+import { useCanonical } from "@/hooks/useCanonical";
+import { useEffect } from "react";
 import { MapPin, Music, User, Image, Mail, Award } from "lucide-react";
 
 interface SitemapLink {
@@ -14,6 +16,18 @@ interface SitemapLink {
 
 const Sitemap = () => {
   usePageTracking("Sitemap");
+  useCanonical("/sitemap");
+  useEffect(() => {
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "robots";
+      document.head.appendChild(meta);
+    }
+    const prev = meta.content;
+    meta.content = "noindex, follow";
+    return () => { if (meta) meta.content = prev; };
+  }, []);
 
   const sitemapLinks: SitemapLink[] = [
     {
