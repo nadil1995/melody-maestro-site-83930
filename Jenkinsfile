@@ -37,8 +37,8 @@ pipeline {
                     string(credentialsId: 'emailjs-service-id',      variable: 'VITE_EMAILJS_SERVICE_ID'),
                     string(credentialsId: 'emailjs-template-id',     variable: 'VITE_EMAILJS_TEMPLATE_ID'),
                     string(credentialsId: 'emailjs-public-key',      variable: 'VITE_EMAILJS_PUBLIC_KEY'),
-                    string(credentialsId: 'aws-access-key-id2',       variable: 'VITE_AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'aws-secret-access-key2',   variable: 'VITE_AWS_SECRET_ACCESS_KEY'),
+                    string(credentialsId: 'aws-access-key-id',       variable: 'VITE_AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'aws-secret-access-key',   variable: 'VITE_AWS_SECRET_ACCESS_KEY'),
                     string(credentialsId: 's3-bucket2',               variable: 'VITE_S3_BUCKET'),
                     string(credentialsId: 's3-region2',               variable: 'VITE_S3_REGION'),
                     string(credentialsId: 's3-folder2',               variable: 'VITE_S3_FOLDER')
