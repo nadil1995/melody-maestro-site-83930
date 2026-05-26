@@ -1,11 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Music, BookOpen, Users, Clock, HeartPulse } from "lucide-react";
+import { type LucideIcon, Music, BookOpen, Clock, HeartPulse , Theater} from "lucide-react";
 import musicNotesImg from "@/assets/music-notes.jpg";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
 const Services = () => {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"]
@@ -13,37 +13,49 @@ const Services = () => {
 
   const y1 = useTransform(scrollYProgress, [0, 1], [50, -50]);
 
-  const services = [
+  const services: Array<{
+    icon: LucideIcon;
+    title: string;
+    description: string;
+    features: string[];
+  }> = [
+    {      icon: Theater,
+      title: "Event Performances",
+      description: "Live flute performances including weddings, special occasions, corporate events, and private parties",
+      features: ["Performs Bollywood, pop, fusion music, and popular Western melodies with backing tracks.", "_Optional tabla, drums, bass guitar, percussion, and sitar accompaniment available._", "Customisable set lists with solo and ensemble performance options."]
+    },
+
+//  Optional tabla, drums, bass guitar, percussion, and sitar accompaniment available. Customisable set lists with solo and ensemble performance options.
      {
       icon: HeartPulse,
-      title: "Mind Relaxation through Music",
-      description: "Experience the therapeutic benefits of music to reduce stress and enhance well-being",
-      features: ["Guided listening sessions", "Breathing techniques", "Mindfulness practices", "Personalized music selection"]
+      title: "Mindfulness sessions ",
+      description: "Experience the benefit of Indian raag based music to reduce stress and enhance well-being",
+      features: ["Guided listening sessions", "Mindfulness practices", "Personalized music selection"]
       
     },
     {
       icon: Music,
       title: "Western Flute Lessons",
-      description: "Comprehensive flute instruction in Croydon, London & Surrey for all skill levels, covering Western classical flute techniques",
-      features: ["Technique development", "Repertoire building", "Performance preparation", "Breath control mastery"]
+      description: "Comprehensive flute instruction in Croydon, London & Surrey for all skill levels.",
+      features: ["Technique development", "Classical music repertoire building", "Pop song training", "ABRSM & Trinity exam Training"]
     },
       {
       icon: Music,
       title: "Indian Flute Lessons",
       description: "Comprehensive flute instruction in Croydon, London & Surrey for all skill levels, covering Indian Bamboo flute and Indian flute (Bansuri) techniques",
-      features: ["Technique development", "Repertoire building", "Performance preparation", "Breath control mastery"]
+      features: ["Technique development", "North Indian raag repertoire building", "Bollywood music training", "Visharad exam preparation"] 
     },
     {
       icon: BookOpen,
       title: "Western Music Theory",
       description: "Build a strong foundation in music theory to enhance your understanding and performance",
-      features: ["Notation and sight-reading", "Harmony and composition", "Ear training", "Music history and context"]
+      features: ["Harmony and composition", "Music history and context", "ABRSM & Trinity exam preparation"]
     },
      {
       icon: BookOpen,
       title: "Indian Music Theory",
       description: "Build a strong foundation in Indian music theory to enhance your understanding and performance",
-      features: ["Notation and sight-reading", "Raaga", "Ear training", "Indian Music history and context"]
+      features: ["North Indian Raag knowledge", "Indian Music history and context", "Visharad exam preparation"]
     }
   ];
 
@@ -96,12 +108,16 @@ const Services = () => {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {service.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-sm text-foreground/80">
-                          <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                          {feature}
-                        </li>
-                      ))}
+                      {service.features.map((feature, idx) => {
+                        const isItalic = feature.startsWith("_") && feature.endsWith("_");
+                        const text = isItalic ? feature.slice(1, -1) : feature;
+                        return (
+                          <li key={idx} className="flex items-start gap-2 text-sm text-foreground/80">
+                            <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0" />
+                            {isItalic ? <em className="text-muted-foreground">{text}</em> : text}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </CardContent>
                 </Card>

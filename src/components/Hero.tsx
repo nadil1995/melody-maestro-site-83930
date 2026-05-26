@@ -87,7 +87,7 @@ const Hero = () => {
             transition={{ delay: 0.1, duration: 0.4 }}
           >
             <Music className="w-4 h-4 text-accent" />
-            <span className="text-sm font-medium text-background">Professional Flautist & Composer · United Kingdom</span>
+            {/* <span className="text-sm font-medium text-background">Intercultural Flautist & Composer · United Kingdom</span> */}
           </motion.div>
 
           <motion.h1
@@ -105,7 +105,7 @@ const Hero = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            Classical Music Reimagined
+            Award Winnig Flautist & Composer · United Kingdom
           </motion.p>
 
           <motion.p
@@ -114,7 +114,8 @@ const Hero = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.25, duration: 0.5 }}
           >
-            Sri Lankan flautist based in the UK. Western &amp; Indian flute lessons in Croydon, London &amp; Surrey. LTCL &amp; Visharad qualified.
+           Sri Lankan flautist, and teacher based in the UK. Offering Western and Indian flute lessons in Croydon, London &amp; Surrey. LTCL &amp; Visharad qualified. Available for performances, private tuition, &amp; flute-based mindfulness sessions.
+            {/* Sri Lankan flautist based in the UK. Western &amp; Indian flute lessons in Croydon, London &amp; Surrey. LTCL &amp; Visharad qualified. */}
           </motion.p>
 
           <motion.div
