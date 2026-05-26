@@ -12,10 +12,10 @@ const Navbar = () => {
   const navItems = [
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
-    { name: "Portfolio", path: "/portfolio" },
+    { name: "Performances", path: "/portfolio" },
+    { name: "Awards", path: "/awards" },
     { name: "Gallery", path: "/gallery" },
     { name: "Contact", path: "/contact" },
-    
   ];
 
   const isActive = (path: string) => {

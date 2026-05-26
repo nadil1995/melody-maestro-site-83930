@@ -48,10 +48,18 @@ const Sitemap = () => {
     },
     {
       path: "/portfolio",
-      title: "Portfolio",
-      description: "View recent performances, achievements, and experience in classical music",
-      icon: <Award className="w-5 h-5" />,
+      title: "Performances",
+      description: "View recent performances and collaborations throughout my musical journey",
+      icon: <Music className="w-5 h-5" />,
       changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      path: "/awards",
+      title: "Awards",
+      description: "Recognition, awards, and achievements throughout my musical career",
+      icon: <Award className="w-5 h-5" />,
+      changeFrequency: "monthly",
       priority: 0.8,
     },
     {

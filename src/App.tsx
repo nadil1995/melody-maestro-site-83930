@@ -9,6 +9,7 @@ import About from "./pages/About";
 import Portfolio from "./pages/Portfolio";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
+import Awards from "./pages/Awards";
 import Sitemap from "./pages/Sitemap";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/awards" element={<Awards />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/sitemap" element={<Sitemap />} />
