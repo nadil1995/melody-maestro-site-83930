@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = "nadil95/lashiweb:latest"
         EC2_HOST = "13.134.139.151"
         SSH_CREDENTIALS = "geo-ssh"
+        VITE_S3_FOLDER = "Lashis images"
     }
 
     stages {
@@ -40,8 +41,7 @@ pipeline {
                     string(credentialsId: 'aws-access-key-id',       variable: 'VITE_AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'aws-secret-access-key',   variable: 'VITE_AWS_SECRET_ACCESS_KEY'),
                     string(credentialsId: 's3-bucket2',               variable: 'VITE_S3_BUCKET'),
-                    string(credentialsId: 's3-region2',               variable: 'VITE_S3_REGION'),
-                    string(credentialsId: 's3-folder2',               variable: 'VITE_S3_FOLDER')
+                    string(credentialsId: 's3-region2',               variable: 'VITE_S3_REGION')
                 ]) {
                     sh '''
                         echo "Logging in to Docker Hub..."
