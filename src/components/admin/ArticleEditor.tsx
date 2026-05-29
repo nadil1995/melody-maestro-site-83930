@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
+import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
@@ -16,13 +16,16 @@ import {
   Heading1, Heading2, Heading3, List, ListOrdered,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   Link as LinkIcon, ImagePlus, Quote, Code, Undo, Redo,
-  ArrowLeft, Save, Globe, Eye, EyeOff, Trash2, Plus, X
+  ArrowLeft, Save, Globe, Eye, EyeOff, Trash2, Plus, X,
+  MessageCircle, User, Clock
 } from "lucide-react";
 import type { Article, ArticleMeta } from "@/types/article";
+import type { Comment } from "@/types/comment";
 import {
   fetchArticleIndex, fetchArticle, saveArticle,
   deleteArticle, uploadArticleImage, slugify
 } from "@/lib/articleStorage";
+import { fetchComments, deleteComment } from "@/lib/commentStorage";
 
 /* ─── Toolbar button helper ─────────────────────────────────────── */
 function ToolBtn({
@@ -46,8 +49,13 @@ function ToolBtn({
 
 /* ─── Article List ────────────────────────────────────────────────── */
 function ArticleList({
-  articles, onEdit, onNew,
-}: { articles: ArticleMeta[]; onEdit: (id: string) => void; onNew: () => void }) {
+  articles, onEdit, onNew, onComments,
+}: {
+  articles: ArticleMeta[];
+  onEdit: (id: string) => void;
+  onNew: () => void;
+  onComments: (slug: string, id: string, title: string) => void;
+}) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -88,9 +96,20 @@ function ArticleList({
                   {a.tags.length > 0 && ` · ${a.tags.join(", ")}`}
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="ml-4" onClick={() => onEdit(a.id)}>
-                Edit
-              </Button>
+              <div className="flex items-center gap-2 ml-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground gap-1.5"
+                  onClick={() => onComments(a.slug, a.id, a.title)}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Comments
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onEdit(a.id)}>
+                  Edit
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -103,11 +122,16 @@ function ArticleList({
 export default function ArticleEditor() {
   const { toast } = useToast();
 
-  const [view, setView] = useState<"list" | "editor">("list");
+  const [view, setView] = useState<"list" | "editor" | "comments">("list");
   const [index, setIndex] = useState<ArticleMeta[]>([]);
   const [loadingIndex, setLoadingIndex] = useState(true);
   const [saving, setSaving] = useState(false);
   const [previewing, setPreviewing] = useState(false);
+
+  // Comments (admin moderation)
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
 
   // Form fields
   const [articleId, setArticleId] = useState("");
@@ -302,6 +326,31 @@ export default function ArticleEditor() {
     setShowLinkInput(false);
   }, [editor, linkUrl]);
 
+  const openComments = useCallback(async (articleSlug: string, articleId: string, articleTitle: string) => {
+    setSlug(articleSlug);
+    setArticleId(articleId);
+    setTitle(articleTitle);
+    setLoadingComments(true);
+    setView("comments");
+    const data = await fetchComments(articleSlug);
+    setComments(data);
+    setLoadingComments(false);
+  }, []);
+
+  const handleDeleteComment = useCallback(async (commentId: string) => {
+    if (!window.confirm("Delete this comment?")) return;
+    setDeletingCommentId(commentId);
+    try {
+      const updated = await deleteComment(slug, commentId);
+      setComments(updated);
+      toast({ title: "Comment deleted" });
+    } catch (err) {
+      toast({ title: "Failed", description: String(err), variant: "destructive" });
+    } finally {
+      setDeletingCommentId(null);
+    }
+  }, [slug, toast]);
+
   // ── Render ─────────────────────────────────────────────────────────
 
   if (loadingIndex) {
@@ -314,7 +363,63 @@ export default function ArticleEditor() {
         articles={index}
         onEdit={loadArticleForEdit}
         onNew={newArticle}
+        onComments={openComments}
       />
+    );
+  }
+
+  // ── Comments moderation view ───────────────────────────────────────
+  if (view === "comments") {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setView("list")}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> All articles
+          </button>
+          <span className="text-muted-foreground">/</span>
+          <span className="text-sm font-medium">{title} — Comments</span>
+        </div>
+
+        {loadingComments ? (
+          <div className="text-muted-foreground py-8">Loading comments…</div>
+        ) : comments.length === 0 ? (
+          <div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-lg">
+            No comments on this article yet.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {comments.map((c) => (
+              <div key={c.id} className="flex items-start gap-3 border border-border rounded-lg p-4">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-sm">{c.username}</span>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      {new Date(c.createdAt).toLocaleString("en-GB")}
+                    </span>
+                  </div>
+                  <p className="text-sm text-foreground/80 whitespace-pre-wrap">{c.content}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive shrink-0"
+                  onClick={() => handleDeleteComment(c.id)}
+                  disabled={deletingCommentId === c.id}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     );
   }
 

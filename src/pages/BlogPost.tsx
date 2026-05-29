@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Calendar, Tag, ArrowLeft, User, BookOpen } from "lucide-react";
 import Footer from "@/components/Footer";
+import CommentSection from "@/components/CommentSection";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useCanonical } from "@/hooks/useCanonical";
 import { fetchArticle } from "@/lib/articleStorage";
@@ -192,6 +193,9 @@ const BlogPost = () => {
             prose-blockquote:border-primary prose-blockquote:text-muted-foreground"
           dangerouslySetInnerHTML={{ __html: article.content }}
         />
+
+        {/* Comments */}
+        <CommentSection slug={article.slug} />
 
         {/* Footer nav */}
         <div className="mt-12 pt-8 border-t border-border flex justify-between items-center">
