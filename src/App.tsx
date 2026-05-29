@@ -11,6 +11,8 @@ import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Awards from "./pages/Awards";
 import Sitemap from "./pages/Sitemap";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
@@ -33,6 +35,8 @@ const App = () => (
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/sitemap" element={<Sitemap />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             {/* Hidden admin route - accessible only via direct URL */}
             <Route path="/maduadmin" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

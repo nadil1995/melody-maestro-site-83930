@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useCanonical } from "@/hooks/useCanonical";
 import { useEffect } from "react";
-import { MapPin, Music, User, Image, Mail, Award } from "lucide-react";
+import { MapPin, Music, User, Image, Mail, Award, BookOpen } from "lucide-react";
 
 interface SitemapLink {
   path: string;
@@ -76,6 +76,14 @@ const Sitemap = () => {
       description: "Get in touch to book a lesson or inquire about flute classes",
       icon: <Mail className="w-5 h-5" />,
       changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      path: "/blog",
+      title: "Blog & Articles",
+      description: "Flute tips, practice guides, music theory, and insights from Lashikala's musical journey",
+      icon: <BookOpen className="w-5 h-5" />,
+      changeFrequency: "weekly",
       priority: 0.8,
     },
   ];

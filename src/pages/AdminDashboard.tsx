@@ -4,17 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
-import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2, BarChart2, Upload, ImagePlus, Table2, Wifi } from 'lucide-react';
+import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2, BarChart2, Upload, ImagePlus, Table2, Wifi, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import S3ImageUploader from '@/components/S3ImageUploader';
 import GalleryManager from '@/components/GalleryManager';
 import DataManager from '@/components/DataManager';
 import LiveAnalytics from '@/components/LiveAnalytics';
+import ArticleEditor from '@/components/admin/ArticleEditor';
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'analytics' | 'live' | 'media' | 'gallery' | 'data'>('live');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'live' | 'media' | 'gallery' | 'data' | 'articles'>('live');
   const { getAnalytics, clearAnalytics } = useAnalytics();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -239,6 +240,17 @@ const AdminDashboard = () => {
             <Table2 className="w-4 h-4" />
             Data
           </button>
+          <button
+            onClick={() => setActiveTab('articles')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'articles'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            Articles
+          </button>
         </div>
 
         {/* Live Analytics Tab */}
@@ -252,6 +264,9 @@ const AdminDashboard = () => {
 
         {/* Data Tab */}
         {activeTab === 'data' && <DataManager />}
+
+        {/* Articles Tab */}
+        {activeTab === 'articles' && <ArticleEditor />}
 
         {/* Analytics Tab */}
         {activeTab === 'analytics' && <>

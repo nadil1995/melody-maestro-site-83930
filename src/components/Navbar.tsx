@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/cmyk png-01.png";
@@ -15,6 +15,7 @@ const Navbar = () => {
     { name: "Performances", path: "/portfolio" },
     { name: "Awards", path: "/awards" },
     { name: "Gallery", path: "/gallery" },
+    { name: "Blog", path: "/blog" },
     { name: "Contact", path: "/contact" },
   ];
 
