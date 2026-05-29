@@ -22,10 +22,10 @@ import {
 import type { Article, ArticleMeta } from "@/types/article";
 import type { Comment } from "@/types/comment";
 import {
-  fetchArticleIndex, fetchArticle, saveArticle,
+  ensureArticlesIndex, fetchArticle, saveArticle,
   deleteArticle, uploadArticleImage, slugify
 } from "@/lib/articleStorage";
-import { fetchComments, deleteComment } from "@/lib/commentStorage";
+import { ensureCommentsFile, deleteComment } from "@/lib/commentStorage";
 
 /* ─── Toolbar button helper ─────────────────────────────────────── */
 function ToolBtn({
@@ -169,9 +169,10 @@ export default function ArticleEditor() {
     },
   });
 
-  // Load index on mount
+  // Load index on mount — ensureArticlesIndex creates data/articles/index.json
+  // in S3 if it doesn't exist yet, eliminating 403s on public GET for all visitors.
   useEffect(() => {
-    fetchArticleIndex().then((data) => {
+    ensureArticlesIndex().then((data) => {
       setIndex(data);
       setLoadingIndex(false);
     });
@@ -332,7 +333,8 @@ export default function ArticleEditor() {
     setTitle(articleTitle);
     setLoadingComments(true);
     setView("comments");
-    const data = await fetchComments(articleSlug);
+    // ensureCommentsFile creates the S3 object if missing, eliminating 403s for readers
+    const data = await ensureCommentsFile(articleSlug);
     setComments(data);
     setLoadingComments(false);
   }, []);

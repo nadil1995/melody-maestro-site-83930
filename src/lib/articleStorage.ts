@@ -43,6 +43,23 @@ export async function fetchArticleIndex(): Promise<ArticleMeta[]> {
   }
 }
 
+/**
+ * Called once by the admin panel on first open.
+ * Creates data/articles/index.json with [] if it doesn't exist,
+ * which converts S3 403/404 on GET to a clean 200 [] for all site visitors.
+ */
+export async function ensureArticlesIndex(): Promise<ArticleMeta[]> {
+  try {
+    const res = await fetch(`${S3_BASE}/data/articles/index.json?t=${Date.now()}`);
+    if (res.ok) return res.json();
+    // 403 or 404 — file missing, create it now using admin credentials
+    await s3Put("data/articles/index.json", "[]", "application/json");
+    return [];
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchArticle(slug: string): Promise<Article | null> {
   try {
     const res = await fetch(`${S3_BASE}/data/articles/${slug}.json?t=${Date.now()}`);

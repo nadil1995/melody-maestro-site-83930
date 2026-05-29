@@ -37,9 +37,25 @@ async function s3Put(key: string, body: string) {
 
 export async function fetchComments(slug: string): Promise<Comment[]> {
   try {
+    // Use no-cors-style: if S3 returns 403/404 (file not yet created) treat as empty.
     const res = await fetch(`${S3_BASE}/${commentKey(slug)}?t=${Date.now()}`);
-    if (!res.ok) return [];
+    if (res.status === 403 || res.status === 404 || !res.ok) return [];
     return res.json();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Admin-only: creates an empty comments file for a slug if one doesn't exist.
+ * Eliminates 403 console noise for readers visiting that article.
+ */
+export async function ensureCommentsFile(slug: string): Promise<Comment[]> {
+  try {
+    const res = await fetch(`${S3_BASE}/${commentKey(slug)}?t=${Date.now()}`);
+    if (res.ok) return res.json();
+    await s3Put(commentKey(slug), "[]");
+    return [];
   } catch {
     return [];
   }
