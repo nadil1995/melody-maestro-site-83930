@@ -9,10 +9,11 @@ import emailjs from '@emailjs/browser';
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
-
+import { useCanonical } from "@/hooks/useCanonical";
 
 const Contact = () => {
   usePageTracking("Contact");
+  useCanonical("/contact");
   const { toast } = useToast();
   const { trackFormSubmission, trackUserAction } = useAnalytics();
   const [formData, setFormData] = useState({
@@ -38,9 +39,15 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'VITE_EMAILJS_SERVICE_ID';
-      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'VITE_EMAILJS_TEMPLATE_ID';
-      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'VITE_EMAILJS_PUBLIC_KEY';
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+      // Check if environment variables are configured
+      if (!serviceId || !templateId || !publicKey) {
+        console.error('EmailJS configuration missing. Check environment variables.');
+        throw new Error('EmailJS not configured. Please contact the administrator.');
+      }
 
       await emailjs.send(
         serviceId,

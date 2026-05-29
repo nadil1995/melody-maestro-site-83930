@@ -4,12 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
-import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2 } from 'lucide-react';
+import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2, BarChart2, Upload, ImagePlus, Table2, Wifi, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import S3ImageUploader from '@/components/S3ImageUploader';
+import GalleryManager from '@/components/GalleryManager';
+import DataManager from '@/components/DataManager';
+import LiveAnalytics from '@/components/LiveAnalytics';
+import ArticleEditor from '@/components/admin/ArticleEditor';
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'live' | 'media' | 'gallery' | 'data' | 'articles'>('live');
   const { getAnalytics, clearAnalytics } = useAnalytics();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -109,6 +115,9 @@ const AdminDashboard = () => {
   const totalUserActions = analytics.userActions.length;
   const uniquePages = new Set(analytics.pageViews.map(pv => pv.page)).size;
 
+  // Check storage usage
+  const storageWarning = totalPageViews > 80 || totalFormSubmissions > 40 || totalUserActions > 80;
+
   // Page view counts
   const pageViewCounts = analytics.pageViews.reduce((acc, pv) => {
     acc[pv.page] = (acc[pv.page] || 0) + 1;
@@ -155,22 +164,129 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-playfair text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">LF Flauto Analytics & User Engagement</p>
+            <p className="text-muted-foreground">LF Flauto Analytics & Media Management</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleClearData}>
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear Data
-            </Button>
+            {activeTab === 'analytics' && (
+              <Button variant="outline" onClick={handleClearData}>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear Data
+              </Button>
+            )}
             <Button variant="outline" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
           </div>
         </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 mb-8 border border-border rounded-lg p-1 w-fit bg-muted/30 flex-wrap">
+          <button
+            onClick={() => setActiveTab('live')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'live'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Wifi className="w-4 h-4" />
+            Live
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'analytics'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <BarChart2 className="w-4 h-4" />
+            Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab('media')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'media'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Upload className="w-4 h-4" />
+            Media Upload
+          </button>
+          <button
+            onClick={() => setActiveTab('gallery')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'gallery'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <ImagePlus className="w-4 h-4" />
+            Gallery
+          </button>
+          <button
+            onClick={() => setActiveTab('data')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'data'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Table2 className="w-4 h-4" />
+            Data
+          </button>
+          <button
+            onClick={() => setActiveTab('articles')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'articles'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            Articles
+          </button>
+        </div>
+
+        {/* Live Analytics Tab */}
+        {activeTab === 'live' && <LiveAnalytics />}
+
+        {/* Media Upload Tab */}
+        {activeTab === 'media' && <S3ImageUploader />}
+
+        {/* Gallery Tab */}
+        {activeTab === 'gallery' && <GalleryManager />}
+
+        {/* Data Tab */}
+        {activeTab === 'data' && <DataManager />}
+
+        {/* Articles Tab */}
+        {activeTab === 'articles' && <ArticleEditor />}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && <>
+
+        {/* Storage Warning */}
+        {storageWarning && (
+          <Card className="mb-8 border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+                <span className="text-2xl">⚠️</span>
+                <div>
+                  <p className="font-semibold">Analytics storage is getting full</p>
+                  <p className="text-sm">
+                    Old data is automatically cleaned after 30 days. Consider clearing data if you've reviewed recent submissions.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
@@ -357,6 +473,8 @@ const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        </>}
       </div>
     </div>
   );

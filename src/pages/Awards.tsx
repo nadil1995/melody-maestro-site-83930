@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { Music, Calendar } from "lucide-react";
+import { Award, ExternalLink } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useCanonical } from "@/hooks/useCanonical";
 
-const Portfolio = () => {
-  usePageTracking("Performances");
-  useCanonical("/portfolio");
+const Awards = () => {
+  usePageTracking("Awards");
+  useCanonical("/awards");
 
-  const [performances, setPerformances] = useState<any[]>([]);
+  const [achievements, setAchievements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const S3_BASE = `https://${import.meta.env.VITE_S3_BUCKET || "geoapp-build-artifacts"}.s3.${import.meta.env.VITE_S3_REGION || "eu-west-2"}.amazonaws.com`;
@@ -24,16 +24,16 @@ const Portfolio = () => {
     });
 
   useEffect(() => {
-    fetch(`${S3_BASE}/data/performances.json?t=${Date.now()}`)
+    fetch(`${S3_BASE}/data/achievements.json?t=${Date.now()}`)
       .then(r => r.ok ? r.json() : [])
       .catch(() => [])
       .then((data: any[]) => {
-        setPerformances(sortByDate(data));
+        setAchievements(sortByDate(data));
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <div className="p-10 text-center text-muted-foreground">Loading performances...</div>;
+  if (loading) return <div className="p-10 text-center text-muted-foreground">Loading awards...</div>;
 
   return (
     <div className="min-h-screen pt-16 bg-background">
@@ -41,25 +41,27 @@ const Portfolio = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h1 className="font-playfair text-4xl md:text-5xl font-bold text-foreground mb-4">Performances</h1>
+              <h1 className="font-playfair text-4xl md:text-5xl font-bold text-foreground mb-4">
+                Achievements &amp; Awards
+              </h1>
               <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto mb-6" />
               <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-                A collection of performances and collaborations throughout my musical journey
+                Recognition, awards, and milestones throughout my musical career
               </p>
             </div>
 
             <div className="grid gap-6">
-              {performances.length > 0 ? (
-                performances.map((p, index) => (
+              {achievements.length > 0 ? (
+                achievements.map((a, index) => (
                   <div
                     key={index}
                     className="bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col md:flex-row"
                   >
-                    {p.image && (
-                      <div className="w-full md:w-32 h-32 bg-muted flex-shrink-0 overflow-hidden">
+                    {a.image && (
+                      <div className="w-full md:w-40 h-40 bg-muted flex-shrink-0 overflow-hidden">
                         <img
-                          src={p.image}
-                          alt={p.title}
+                          src={a.image}
+                          alt={a.title}
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display = "none";
@@ -68,22 +70,30 @@ const Portfolio = () => {
                       </div>
                     )}
                     <div className="p-6 flex flex-col flex-1">
-                      <div className="flex items-start justify-between mb-3">
-                        <h2 className="font-playfair text-2xl font-semibold text-foreground">{p.title}</h2>
-                        <span className="text-sm text-muted-foreground flex items-center gap-1 whitespace-nowrap ml-2">
-                          <Calendar className="w-4 h-4" />
-                          {p.date}
-                        </span>
+                      <div className="flex items-start gap-3 mb-2">
+                        <Award className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                        <p className="text-lg text-foreground">{a.title}</p>
                       </div>
-                      <p className="text-primary font-medium mb-2">{p.venue}</p>
-                      <p className="text-foreground/70">{p.description}</p>
+                      {a.date && (
+                        <p className="text-sm text-muted-foreground ml-8 mb-2">{a.date}</p>
+                      )}
+                      {a.link && (
+                        <a
+                          href={a.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-primary hover:text-accent transition-colors font-medium mt-auto ml-8"
+                        >
+                          View Details
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="bg-card p-8 rounded-lg border border-border text-center">
-                  <Music className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-                  <p className="text-muted-foreground">Performance data will be displayed here soon.</p>
+                  <p className="text-muted-foreground">Awards data will be displayed here soon.</p>
                 </div>
               )}
             </div>
@@ -95,4 +105,4 @@ const Portfolio = () => {
   );
 };
 
-export default Portfolio;
+export default Awards;

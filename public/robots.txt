@@ -10,5 +10,45 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# AI / LLM crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
 User-agent: *
 Allow: /
+Disallow: /maduadmin
+
+Sitemap: https://www.lflauto.co.uk/sitemap.xml
+
+# AI content index
+LLMs: https://www.lflauto.co.uk/llms.txt
