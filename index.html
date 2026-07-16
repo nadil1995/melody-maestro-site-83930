@@ -215,75 +215,25 @@
     }
     </script>
 
-    <!-- Schema: Concerts / Music Events -->
+    <!-- Schema: Past concerts & performances.
+         Deliberately NOT typed as MusicEvent: Google validates Event markup for
+         upcoming bookable events (endDate, offers, organizer, tickets...) and
+         flags historical concerts with "Improve item appearance" warnings.
+         Name-only list items keep the content indexable without Event validation. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
       "name": "Concerts and Performances by Lashikala Hettiarachchi",
-      "description": "Concert and performance history of Sri Lankan flautist Lashikala Hettiarachchi",
+      "description": "Past concert and performance history of Sri Lankan flautist Lashikala Hettiarachchi",
       "itemListElement": [
-        {
-          "@type": "ListItem", "position": 1,
-          "item": {
-            "@type": "MusicEvent",
-            "name": "Miyuru Gee Dahana - Glasgow Concert",
-            "location": { "@type": "Place", "name": "Glasgow, United Kingdom" },
-            "performer": { "@type": "Person", "name": "Lashikala Hettiarachchi" }
-          }
-        },
-        {
-          "@type": "ListItem", "position": 2,
-          "item": {
-            "@type": "MusicEvent",
-            "name": "Hadha Randhi Miyuru Gee Suyamaya - High Wycombe",
-            "location": { "@type": "Place", "name": "High Wycombe, United Kingdom" },
-            "performer": { "@type": "Person", "name": "Lashikala Hettiarachchi" }
-          }
-        },
-        {
-          "@type": "ListItem", "position": 3,
-          "item": {
-            "@type": "MusicEvent",
-            "name": "Bank of Ceylon London Branch 75th Anniversary Concert",
-            "location": { "@type": "Place", "name": "London, United Kingdom" },
-            "performer": { "@type": "Person", "name": "Lashikala Hettiarachchi" }
-          }
-        },
-        {
-          "@type": "ListItem", "position": 4,
-          "item": {
-            "@type": "MusicEvent",
-            "name": "Pawan Podak Concert",
-            "performer": { "@type": "Person", "name": "Lashikala Hettiarachchi" }
-          }
-        },
-        {
-          "@type": "ListItem", "position": 5,
-          "item": {
-            "@type": "MusicEvent",
-            "name": "Candlelight Solo Flute Performance",
-            "performer": { "@type": "Person", "name": "Lashikala Hettiarachchi" }
-          }
-        },
-        {
-          "@type": "ListItem", "position": 6,
-          "item": {
-            "@type": "MusicEvent",
-            "name": "Gustav Mahler Orchestra Sri Lanka Concert",
-            "location": { "@type": "Place", "name": "Sri Lanka" },
-            "performer": { "@type": "Person", "name": "Lashikala Hettiarachchi" }
-          }
-        },
-        {
-          "@type": "ListItem", "position": 7,
-          "item": {
-            "@type": "MusicEvent",
-            "name": "Colombo Wind Orchestra Performance",
-            "location": { "@type": "Place", "name": "Colombo, Sri Lanka" },
-            "performer": { "@type": "Person", "name": "Lashikala Hettiarachchi" }
-          }
-        }
+        { "@type": "ListItem", "position": 1, "name": "Miyuru Gee Dahana - Glasgow Concert, Glasgow, United Kingdom" },
+        { "@type": "ListItem", "position": 2, "name": "Hadha Randhi Miyuru Gee Suyamaya - High Wycombe, United Kingdom" },
+        { "@type": "ListItem", "position": 3, "name": "Bank of Ceylon London Branch 75th Anniversary Concert - London, United Kingdom" },
+        { "@type": "ListItem", "position": 4, "name": "Pawan Podak Concert" },
+        { "@type": "ListItem", "position": 5, "name": "Candlelight Solo Flute Performance" },
+        { "@type": "ListItem", "position": 6, "name": "Gustav Mahler Orchestra Sri Lanka Concert" },
+        { "@type": "ListItem", "position": 7, "name": "Colombo Wind Orchestra Performance - Colombo, Sri Lanka" }
       ]
     }
     </script>

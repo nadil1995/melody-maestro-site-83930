@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.lflauto.co.uk/</loc>
-    <lastmod>2026-05-15</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -38,9 +38,21 @@
   </url>
   <url>
     <loc>https://www.lflauto.co.uk/blog</loc>
-    <lastmod>2026-05-29</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lflauto.co.uk/blog/how-music-teaches-patience-rhythm-listening-and-raag-aalap</loc>
+    <lastmod>2026-06-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lflauto.co.uk/blog/switching-flutes-and-traditions-my-journey-between-two-worlds</loc>
+    <lastmod>2026-05-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.lflauto.co.uk/western-flute-lessons-london</loc>
