@@ -3,20 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAnalytics } from '@/contexts/AnalyticsContext';
-import { Eye, MessageSquare, MousePointer, Users, Calendar, Mail, Phone, Clock, LogOut, Trash2, BarChart2, Upload, ImagePlus, Table2, Wifi, FileText } from 'lucide-react';
+import { LogOut, BarChart2, Upload, ImagePlus, Table2, Wifi, FileText, LayoutTemplate } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import S3ImageUploader from '@/components/S3ImageUploader';
 import GalleryManager from '@/components/GalleryManager';
 import DataManager from '@/components/DataManager';
 import LiveAnalytics from '@/components/LiveAnalytics';
+import HistoricalAnalytics from '@/components/HistoricalAnalytics';
 import ArticleEditor from '@/components/admin/ArticleEditor';
+import ServicePageEditor from '@/components/admin/ServicePageEditor';
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'analytics' | 'live' | 'media' | 'gallery' | 'data' | 'articles'>('live');
-  const { getAnalytics, clearAnalytics } = useAnalytics();
+  const [activeTab, setActiveTab] = useState<'analytics' | 'live' | 'media' | 'gallery' | 'data' | 'articles' | 'pages'>('live');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -59,16 +59,6 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleClearData = () => {
-    if (window.confirm('Are you sure you want to clear all analytics data? This cannot be undone.')) {
-      clearAnalytics();
-      toast({
-        title: 'Data Cleared',
-        description: 'All analytics data has been cleared',
-      });
-    }
-  };
-
   // Login screen
   if (!isAuthenticated) {
     return (
@@ -106,60 +96,6 @@ const AdminDashboard = () => {
     );
   }
 
-  // Dashboard view
-  const analytics = getAnalytics();
-
-  // Calculate statistics
-  const totalPageViews = analytics.pageViews.length;
-  const totalFormSubmissions = analytics.formSubmissions.length;
-  const totalUserActions = analytics.userActions.length;
-  const uniquePages = new Set(analytics.pageViews.map(pv => pv.page)).size;
-
-  // Check storage usage
-  const storageWarning = totalPageViews > 80 || totalFormSubmissions > 40 || totalUserActions > 80;
-
-  // Page view counts
-  const pageViewCounts = analytics.pageViews.reduce((acc, pv) => {
-    acc[pv.page] = (acc[pv.page] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  // Recent page views (last 10)
-  const recentPageViews = [...analytics.pageViews]
-    .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 10);
-
-  // Recent form submissions (last 10)
-  const recentSubmissions = [...analytics.formSubmissions]
-    .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 10);
-
-  // Recent user actions (last 10)
-  const recentActions = [...analytics.userActions]
-    .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 10);
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatRelativeTime = (timestamp: number) => {
-    const seconds = Math.floor((Date.now() - timestamp) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
-
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto px-4 py-8">
@@ -170,12 +106,6 @@ const AdminDashboard = () => {
             <p className="text-muted-foreground">LF Flauto Analytics & Media Management</p>
           </div>
           <div className="flex gap-2">
-            {activeTab === 'analytics' && (
-              <Button variant="outline" onClick={handleClearData}>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clear Data
-              </Button>
-            )}
             <Button variant="outline" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Logout
@@ -251,10 +181,24 @@ const AdminDashboard = () => {
             <FileText className="w-4 h-4" />
             Articles
           </button>
+          <button
+            onClick={() => setActiveTab('pages')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'pages'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <LayoutTemplate className="w-4 h-4" />
+            Service Pages
+          </button>
         </div>
 
         {/* Live Analytics Tab */}
         {activeTab === 'live' && <LiveAnalytics />}
+
+        {/* Historical Analytics Tab */}
+        {activeTab === 'analytics' && <HistoricalAnalytics />}
 
         {/* Media Upload Tab */}
         {activeTab === 'media' && <S3ImageUploader />}
@@ -268,213 +212,9 @@ const AdminDashboard = () => {
         {/* Articles Tab */}
         {activeTab === 'articles' && <ArticleEditor />}
 
-        {/* Analytics Tab */}
-        {activeTab === 'analytics' && <>
+        {/* Service Pages Tab */}
+        {activeTab === 'pages' && <ServicePageEditor />}
 
-        {/* Storage Warning */}
-        {storageWarning && (
-          <Card className="mb-8 border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
-                <span className="text-2xl">⚠️</span>
-                <div>
-                  <p className="font-semibold">Analytics storage is getting full</p>
-                  <p className="text-sm">
-                    Old data is automatically cleaned after 30 days. Consider clearing data if you've reviewed recent submissions.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Stats Overview */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Page Views</CardTitle>
-              <Eye className="w-4 h-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{totalPageViews}</div>
-              <p className="text-xs text-muted-foreground mt-1">{uniquePages} unique pages</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Form Submissions</CardTitle>
-              <MessageSquare className="w-4 h-4 text-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{totalFormSubmissions}</div>
-              <p className="text-xs text-muted-foreground mt-1">Contact inquiries</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">User Actions</CardTitle>
-              <MousePointer className="w-4 h-4 text-secondary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{totalUserActions}</div>
-              <p className="text-xs text-muted-foreground mt-1">Interactions tracked</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
-              <Users className="w-4 h-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{analytics.totalSessions}</div>
-              <p className="text-xs text-muted-foreground mt-1">Site visits</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Page Views by Page */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Page Views by Page
-            </CardTitle>
-            <CardDescription>Total views per page</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {Object.entries(pageViewCounts)
-                .sort(([, a], [, b]) => b - a)
-                .map(([page, count]) => (
-                  <div key={page} className="flex items-center justify-between">
-                    <span className="font-medium">{page}</span>
-                    <span className="text-2xl font-bold text-primary">{count}</span>
-                  </div>
-                ))}
-              {Object.keys(pageViewCounts).length === 0 && (
-                <p className="text-muted-foreground text-center py-4">No page views recorded yet</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {/* Recent Page Views */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Recent Page Views
-              </CardTitle>
-              <CardDescription>Last 10 page visits</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {recentPageViews.map((pv, idx) => (
-                  <div key={idx} className="border-b border-border pb-2 last:border-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium">{pv.page}</span>
-                      <span className="text-xs text-muted-foreground">{formatRelativeTime(pv.timestamp)}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3 inline mr-1" />
-                      {formatDate(pv.timestamp)}
-                    </div>
-                  </div>
-                ))}
-                {recentPageViews.length === 0 && (
-                  <p className="text-muted-foreground text-center py-4">No page views yet</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent User Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MousePointer className="w-5 h-5" />
-                Recent User Actions
-              </CardTitle>
-              <CardDescription>Last 10 interactions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {recentActions.map((action, idx) => (
-                  <div key={idx} className="border-b border-border pb-2 last:border-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium">{action.action}</span>
-                      <span className="text-xs text-muted-foreground">{formatRelativeTime(action.timestamp)}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {action.page} • {formatDate(action.timestamp)}
-                    </div>
-                    {action.details && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {action.details}
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {recentActions.length === 0 && (
-                  <p className="text-muted-foreground text-center py-4">No user actions yet</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Form Submissions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5" />
-              Contact Form Submissions
-            </CardTitle>
-            <CardDescription>Recent contact inquiries (last 10)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentSubmissions.map((submission, idx) => (
-                <div key={idx} className="border border-border rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold text-lg">{submission.name}</h4>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          <Mail className="w-3 h-3" />
-                          {submission.email}
-                        </span>
-                        {submission.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            {submission.phone}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs text-muted-foreground">{formatRelativeTime(submission.timestamp)}</span>
-                      <div className="text-xs text-muted-foreground mt-1">{formatDate(submission.timestamp)}</div>
-                    </div>
-                  </div>
-                  <div className="bg-muted/30 p-3 rounded text-sm">
-                    <strong>Message:</strong>
-                    <p className="mt-1">{submission.message}</p>
-                  </div>
-                </div>
-              ))}
-              {recentSubmissions.length === 0 && (
-                <p className="text-muted-foreground text-center py-8">No form submissions yet</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        </>}
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import emailjs from '@emailjs/browser';
 import { useAnalytics } from "@/contexts/AnalyticsContext";
+import { trackFormSubmissionS3 } from "@/lib/analyticsTracker";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useCanonical } from "@/hooks/useCanonical";
@@ -63,6 +64,14 @@ const Contact = () => {
       );
 
       trackFormSubmission({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+      });
+
+      // Persist to S3 so the admin dashboard sees it from any browser
+      void trackFormSubmissionS3({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,

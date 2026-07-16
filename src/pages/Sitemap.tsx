@@ -86,6 +86,30 @@ const Sitemap = () => {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    {
+      path: "/western-flute-lessons-london",
+      title: "Western Flute Lessons London",
+      description: "Classical flute lessons in London, Croydon & Surrey — beginners to advanced, ABRSM & Trinity exam preparation",
+      icon: <Music className="w-5 h-5" />,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      path: "/bansuri-lessons-croydon",
+      title: "Bansuri Lessons Croydon",
+      description: "Indian flute (bansuri) lessons in Croydon & London — North Indian raags, Bollywood music & Visharad exams",
+      icon: <Music className="w-5 h-5" />,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      path: "/flute-performance-events",
+      title: "Flute Performances for Events",
+      description: "Live flute music for weddings, corporate events & private parties in London, Surrey and across the UK",
+      icon: <Music className="w-5 h-5" />,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
   ];
 
   const generateSitemapXML = () => {

@@ -14,6 +14,9 @@ import Sitemap from "./pages/Sitemap";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AdminDashboard from "./pages/AdminDashboard";
+import WesternFluteLessonsLondon from "./pages/WesternFluteLessonsLondon";
+import BansuriLessonsCroydon from "./pages/BansuriLessonsCroydon";
+import FlutePerformanceEvents from "./pages/FlutePerformanceEvents";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
@@ -37,6 +40,9 @@ const App = () => (
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/western-flute-lessons-london" element={<WesternFluteLessonsLondon />} />
+            <Route path="/bansuri-lessons-croydon" element={<BansuriLessonsCroydon />} />
+            <Route path="/flute-performance-events" element={<FlutePerformanceEvents />} />
             {/* Hidden admin route - accessible only via direct URL */}
             <Route path="/maduadmin" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

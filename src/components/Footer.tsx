@@ -38,11 +38,23 @@ const Footer = () => {
 
             <div>
               <h3 className="font-playfair text-lg font-bold mb-4">Services</h3>
-              <ul className="space-y-2 text-sm text-secondary-foreground/80">
-                <li>Flute Lessons</li>
-                <li>Music Theory</li>
-                <li>Performance Coaching</li>
-                <li>Group Workshops</li>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link to="/western-flute-lessons-london" className="text-secondary-foreground/80 hover:text-accent transition-colors">
+                    Western Flute Lessons London
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/bansuri-lessons-croydon" className="text-secondary-foreground/80 hover:text-accent transition-colors">
+                    Bansuri Lessons Croydon
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/flute-performance-events" className="text-secondary-foreground/80 hover:text-accent transition-colors">
+                    Event Performances
+                  </Link>
+                </li>
+                <li className="text-secondary-foreground/80">Music Theory</li>
               </ul>
             </div>
 

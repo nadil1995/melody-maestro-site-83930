@@ -5,7 +5,11 @@ const BUCKET   = import.meta.env.VITE_S3_BUCKET  || "geoapp-build-artifacts";
 const REGION   = import.meta.env.VITE_S3_REGION  || "eu-west-2";
 const S3_BASE  = `https://${BUCKET}.s3.${REGION}.amazonaws.com`;
 const FEED_KEY = "analytics/live-feed.json";
-const MAX_EVENTS = 500;
+const HISTORY_KEY = "analytics/history.json";
+const FORMS_KEY   = "analytics/form-submissions.json";
+const MAX_EVENTS  = 500;
+const MAX_HISTORY = 10000;
+const MAX_FORMS   = 1000;
 
 export interface VisitEvent {
   sessionId: string;
@@ -98,21 +102,21 @@ function buildS3Client() {
   });
 }
 
-async function readFeed(): Promise<VisitEvent[]> {
+async function readJson<T>(key: string): Promise<T[]> {
   try {
-    const res = await fetch(`${S3_BASE}/${FEED_KEY}?t=${Date.now()}`);
+    const res = await fetch(`${S3_BASE}/${key}?t=${Date.now()}`);
     return res.ok ? res.json() : [];
   } catch {
     return [];
   }
 }
 
-async function writeFeed(events: VisitEvent[]): Promise<void> {
+async function writeJson(key: string, data: unknown): Promise<void> {
   const client = buildS3Client();
-  const body   = JSON.stringify(events);
+  const body   = JSON.stringify(data);
   const url    = await getSignedUrl(
     client,
-    new PutObjectCommand({ Bucket: BUCKET, Key: FEED_KEY, ContentType: "application/json" }),
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: "application/json" }),
     { expiresIn: 300 }
   );
   await fetch(url, {
@@ -121,6 +125,9 @@ async function writeFeed(events: VisitEvent[]): Promise<void> {
     headers: { "Content-Type": "application/json" },
   });
 }
+
+const readFeed  = () => readJson<VisitEvent>(FEED_KEY);
+const writeFeed = (events: VisitEvent[]) => writeJson(FEED_KEY, events);
 
 export async function trackVisit(page: string): Promise<void> {
   try {
@@ -153,4 +160,93 @@ export async function trackVisit(page: string): Promise<void> {
 // Called by admin dashboard to read all events
 export async function readLiveFeed(): Promise<VisitEvent[]> {
   return readFeed();
+}
+
+/**
+ * Diagnoses why analytics data might not load, so the dashboard can show a
+ * real error instead of an empty page. A fetch() that throws (rather than
+ * returning a status) almost always means the bucket's CORS policy doesn't
+ * allow this origin.
+ */
+export async function probeAnalyticsSource(): Promise<string | null> {
+  try {
+    const res = await fetch(`${S3_BASE}/${FEED_KEY}?t=${Date.now()}`);
+    if (res.ok) return null;
+    if (res.status === 403 || res.status === 404) {
+      return `No analytics data file exists yet in S3 (${res.status} for ${FEED_KEY}). It is created automatically on the first tracked visit.`;
+    }
+    return `S3 returned ${res.status} when reading ${FEED_KEY}.`;
+  } catch {
+    return `Could not reach S3 from this origin (${window.location.origin}). The bucket's CORS policy only allows the production site — data will show on https://www.lflauto.co.uk, or add this origin to the bucket CORS configuration.`;
+  }
+}
+
+// ── Historical archive ────────────────────────────────────────────────────────
+// The live feed keeps only the last 500 events. Whenever the admin opens the
+// analytics view, any feed events not yet archived are merged into
+// analytics/history.json, so history accumulates instead of rolling off.
+
+const eventKey = (e: VisitEvent) => `${e.sessionId}|${e.timestamp}|${e.page}`;
+
+export async function loadHistory(): Promise<VisitEvent[]> {
+  const [history, feed] = await Promise.all([
+    readJson<VisitEvent>(HISTORY_KEY),
+    readFeed(),
+  ]);
+
+  const seen = new Set(history.map(eventKey));
+  const fresh = feed.filter((e) => !seen.has(eventKey(e)));
+
+  const merged = [...fresh, ...history]
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, MAX_HISTORY);
+
+  if (fresh.length > 0) {
+    try {
+      await writeJson(HISTORY_KEY, merged);
+    } catch {
+      // Archive write failed — still return the merged view for display
+    }
+  }
+
+  return merged;
+}
+
+// ── Form submissions (S3-persisted, visible from any browser) ────────────────
+
+export interface FormSubmissionEvent {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  country: string;
+  city: string;
+  device: string;
+  timestamp: number;
+}
+
+export async function trackFormSubmissionS3(data: {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}): Promise<void> {
+  try {
+    const geo = await getGeoInfo();
+    const event: FormSubmissionEvent = {
+      ...data,
+      country: geo.country,
+      city: geo.city,
+      device: getDevice(),
+      timestamp: Date.now(),
+    };
+    const existing = await readJson<FormSubmissionEvent>(FORMS_KEY);
+    await writeJson(FORMS_KEY, [event, ...existing].slice(0, MAX_FORMS));
+  } catch {
+    // Silent — analytics must never break the contact form
+  }
+}
+
+export async function readFormSubmissions(): Promise<FormSubmissionEvent[]> {
+  return readJson<FormSubmissionEvent>(FORMS_KEY);
 }
