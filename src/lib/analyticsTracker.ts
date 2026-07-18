@@ -24,6 +24,15 @@ export interface VisitEvent {
   referrer: string;
   page: string;
   timestamp: number;
+  /** "view" = a real page view; "ping" = heartbeat proving the visitor is still on the page */
+  kind?: "view" | "ping";
+}
+
+/** Crawlers (Googlebot renders JS) and headless browsers must not pollute visitor data. */
+function isBot(): boolean {
+  return /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|prerender|preview|facebookexternalhit|whatsapp|telegram|puppeteer|playwright|phantomjs/i.test(
+    navigator.userAgent
+  );
 }
 
 function getDevice(): "Mobile" | "Tablet" | "Desktop" {
@@ -69,25 +78,56 @@ function getSessionId(): string {
 }
 
 async function getGeoInfo(): Promise<{ ip: string; country: string; city: string }> {
-  try {
-    const cached = sessionStorage.getItem("rt_geo");
-    if (cached) return JSON.parse(cached);
-
-    // ipapi.co supports browser CORS requests
-    const res = await fetch("https://ipapi.co/json/", {
-      signal: AbortSignal.timeout(5000),
-    });
-    const d = await res.json();
-    const geo = {
-      ip:      d.ip           || "unknown",
-      country: d.country_name || "Unknown",
-      city:    d.city         || "Unknown",
-    };
-    sessionStorage.setItem("rt_geo", JSON.stringify(geo));
-    return geo;
-  } catch {
-    return { ip: "unknown", country: "Unknown", city: "Unknown" };
+  const cached = sessionStorage.getItem("rt_geo");
+  if (cached) {
+    try { return JSON.parse(cached); } catch {}
   }
+
+  // Two independent geo providers — ipapi.co rate-limits its free tier, and
+  // either may be blocked by ad-blockers, so a single provider gives "Unknown"
+  // for a meaningful share of visitors.
+  const providers: (() => Promise<{ ip: string; country: string; city: string } | null>)[] = [
+    async () => {
+      const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(5000) });
+      const d = await res.json();
+      if (!d.ip) return null;
+      return { ip: d.ip, country: d.country_name || "Unknown", city: d.city || "Unknown" };
+    },
+    async () => {
+      const res = await fetch("https://ipwho.is/", { signal: AbortSignal.timeout(5000) });
+      const d = await res.json();
+      if (!d.success || !d.ip) return null;
+      return { ip: d.ip, country: d.country || "Unknown", city: d.city || "Unknown" };
+    },
+  ];
+
+  for (const provider of providers) {
+    try {
+      const geo = await provider();
+      if (geo) {
+        sessionStorage.setItem("rt_geo", JSON.stringify(geo));
+        return geo;
+      }
+    } catch {
+      // try the next provider
+    }
+  }
+  return { ip: "unknown", country: "Unknown", city: "Unknown" };
+}
+
+/**
+ * Stable per-browser visitor id. Prefer the IP; when geo lookup fails, fall
+ * back to a persistent random id instead of "v-unknown" — otherwise every
+ * geo-blocked visitor collapses into one visitor and unique counts are wrong.
+ */
+function getVisitorId(ip: string): string {
+  if (ip !== "unknown") return `v-${ip.replace(/[.:]/g, "")}`;
+  let id = localStorage.getItem("rt_vid");
+  if (!id) {
+    id = `v-anon-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+    try { localStorage.setItem("rt_vid", id); } catch {}
+  }
+  return id;
 }
 
 function buildS3Client() {
@@ -129,29 +169,55 @@ async function writeJson(key: string, data: unknown): Promise<void> {
 const readFeed  = () => readJson<VisitEvent>(FEED_KEY);
 const writeFeed = (events: VisitEvent[]) => writeJson(FEED_KEY, events);
 
+let lastPage = "";
+let heartbeatStarted = false;
+const HEARTBEAT_MS = 60 * 1000;
+
+async function pushEvent(page: string, kind: "view" | "ping"): Promise<void> {
+  const geo       = await getGeoInfo();
+  const sessionId = getSessionId();
+
+  const event: VisitEvent = {
+    sessionId,
+    visitorId: getVisitorId(geo.ip),
+    ip:        geo.ip,
+    country:   geo.country,
+    city:      geo.city,
+    device:    getDevice(),
+    browser:   getBrowser(),
+    os:        getOS(),
+    source:    getSource(document.referrer),
+    referrer:  document.referrer,
+    page,
+    timestamp: Date.now(),
+    kind,
+  };
+
+  const existing = await readFeed();
+  const updated  = [event, ...existing].slice(0, MAX_EVENTS);
+  await writeFeed(updated);
+}
+
+/**
+ * While the tab stays visible, send a "ping" every minute so the Live tab
+ * knows the visitor is still on the page. Without this, anyone reading for
+ * more than 5 minutes drops out of "Live now" even though they're still here.
+ */
+function ensureHeartbeat(): void {
+  if (heartbeatStarted) return;
+  heartbeatStarted = true;
+  setInterval(() => {
+    if (document.visibilityState !== "visible" || !lastPage) return;
+    pushEvent(lastPage, "ping").catch(() => {});
+  }, HEARTBEAT_MS);
+}
+
 export async function trackVisit(page: string): Promise<void> {
   try {
-    const geo       = await getGeoInfo();
-    const sessionId = getSessionId();
-
-    const event: VisitEvent = {
-      sessionId,
-      visitorId: `v-${geo.ip.replace(/[.:]/g, "")}`,
-      ip:        geo.ip,
-      country:   geo.country,
-      city:      geo.city,
-      device:    getDevice(),
-      browser:   getBrowser(),
-      os:        getOS(),
-      source:    getSource(document.referrer),
-      referrer:  document.referrer,
-      page,
-      timestamp: Date.now(),
-    };
-
-    const existing = await readFeed();
-    const updated  = [event, ...existing].slice(0, MAX_EVENTS);
-    await writeFeed(updated);
+    if (isBot()) return;
+    lastPage = page;
+    ensureHeartbeat();
+    await pushEvent(page, "view");
   } catch {
     // Silent — analytics must never break the site
   }
@@ -194,8 +260,9 @@ export async function loadHistory(): Promise<VisitEvent[]> {
     readFeed(),
   ]);
 
+  // Heartbeat pings prove liveness but aren't page views — keep them out of history
   const seen = new Set(history.map(eventKey));
-  const fresh = feed.filter((e) => !seen.has(eventKey(e)));
+  const fresh = feed.filter((e) => e.kind !== "ping" && !seen.has(eventKey(e)));
 
   const merged = [...fresh, ...history]
     .sort((a, b) => b.timestamp - a.timestamp)

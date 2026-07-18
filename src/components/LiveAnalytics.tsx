@@ -59,19 +59,25 @@ export default function LiveAnalytics() {
   const MIN30_MS  = 30 * 60 * 1000;
   const DAY_MS    = 24 * 60 * 60 * 1000;
 
+  // Presence (who is here right now) counts every event including heartbeat
+  // pings; page-view metrics count only real "view" events.
   const liveEvents   = events.filter(e => now - e.timestamp < LIVE_MS);
   const last30Events = events.filter(e => now - e.timestamp < MIN30_MS);
   const todayEvents  = events.filter(e => now - e.timestamp < DAY_MS);
+
+  const views        = events.filter(e => e.kind !== "ping");
+  const last30Views  = views.filter(e => now - e.timestamp < MIN30_MS);
+  const todayViews   = views.filter(e => now - e.timestamp < DAY_MS);
 
   const liveVisitors   = new Set(liveEvents.map(e => e.visitorId)).size;
   const last30Visitors = new Set(last30Events.map(e => e.visitorId)).size;
   const todayVisitors  = new Set(todayEvents.map(e => e.visitorId)).size;
 
-  const countries = countBy(todayEvents, e => e.country);
-  const pages     = countBy(todayEvents, e => e.page);
-  const sources   = countBy(todayEvents, e => e.source);
-  const devices   = countBy(todayEvents, e => e.device);
-  const browsers  = countBy(todayEvents, e => e.browser);
+  const countries = countBy(todayViews, e => e.country);
+  const pages     = countBy(todayViews, e => e.page);
+  const sources   = countBy(todayViews, e => e.source);
+  const devices   = countBy(todayViews, e => e.device);
+  const browsers  = countBy(todayViews, e => e.browser);
 
   const topCountryCount = countries[0]?.[1] ?? 1;
   const topPageCount    = pages[0]?.[1] ?? 1;
@@ -130,7 +136,7 @@ export default function LiveAnalytics() {
                   <span className="text-xs font-medium text-muted-foreground">Last 30 min</span>
                 </div>
                 <div className="text-3xl font-bold">{last30Visitors}</div>
-                <div className="text-xs text-muted-foreground">{last30Events.length} page views</div>
+                <div className="text-xs text-muted-foreground">{last30Views.length} page views</div>
               </CardContent>
             </Card>
 
@@ -151,7 +157,7 @@ export default function LiveAnalytics() {
                   <Eye className="w-4 h-4 text-muted-foreground" />
                   <span className="text-xs font-medium text-muted-foreground">Today views</span>
                 </div>
-                <div className="text-3xl font-bold">{todayEvents.length}</div>
+                <div className="text-3xl font-bold">{todayViews.length}</div>
                 <div className="text-xs text-muted-foreground">{countries.length} countries</div>
               </CardContent>
             </Card>
@@ -297,7 +303,7 @@ export default function LiveAnalytics() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-1.5 max-h-96 overflow-y-auto">
-                  {events.slice(0, 40).map((e, i) => (
+                  {views.slice(0, 40).map((e, i) => (
                     <div key={i} className={`flex items-center gap-2 p-2 rounded text-xs transition-colors ${
                       now - e.timestamp < LIVE_MS ? "bg-primary/5 border border-primary/20" : "bg-muted/20"
                     }`}>
@@ -309,7 +315,7 @@ export default function LiveAnalytics() {
                       </span>
                     </div>
                   ))}
-                  {events.length === 0 && (
+                  {views.length === 0 && (
                     <p className="text-xs text-muted-foreground text-center py-8">No activity yet — visit any page to start tracking</p>
                   )}
                 </div>
