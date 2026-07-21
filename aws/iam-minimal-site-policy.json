@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SiteContentWrites",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject"],
+      "Resource": [
+        "arn:aws:s3:::geoapp-build-artifacts/analytics/*",
+        "arn:aws:s3:::geoapp-build-artifacts/data/*",
+        "arn:aws:s3:::geoapp-build-artifacts/articles/*"
+      ]
+    }
+  ]
+}
