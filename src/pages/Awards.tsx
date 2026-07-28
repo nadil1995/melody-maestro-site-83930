@@ -2,11 +2,16 @@ import { useEffect, useState } from "react";
 import { Award, ExternalLink } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
-import { useCanonical } from "@/hooks/useCanonical";
+import { useSEO } from "@/hooks/useSEO";
 
 const Awards = () => {
   usePageTracking("Awards");
-  useCanonical("/awards");
+  useSEO({
+    title: "Awards & Achievements | Lashikala Hettiarachchi",
+    description:
+      "National Youth Award-winning flautist Lashikala Hettiarachchi's achievements, qualifications, and recognitions in Western and Indian classical music.",
+    path: "/awards",
+  });
 
   const [achievements, setAchievements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

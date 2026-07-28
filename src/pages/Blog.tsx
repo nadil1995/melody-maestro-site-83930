@@ -3,13 +3,18 @@ import { Link } from "react-router-dom";
 import { Calendar, Tag, ArrowRight, BookOpen } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
-import { useCanonical } from "@/hooks/useCanonical";
+import { useSEO } from "@/hooks/useSEO";
 import { fetchArticleIndex } from "@/lib/articleStorage";
 import type { ArticleMeta } from "@/types/article";
 
 const Blog = () => {
   usePageTracking("Blog");
-  useCanonical("/blog");
+  useSEO({
+    title: "Blog | Flute Tips, Music Theory & Insights | Lflauto",
+    description:
+      "Flute practice tips, music theory guides, and insights from Sri Lankan flautist Lashikala Hettiarachchi's musical journey.",
+    path: "/blog",
+  });
 
   const [articles, setArticles] = useState<ArticleMeta[]>([]);
   const [loading, setLoading] = useState(true);

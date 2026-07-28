@@ -2,11 +2,16 @@ import { useEffect, useState } from "react";
 import { Music, Calendar } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
-import { useCanonical } from "@/hooks/useCanonical";
+import { useSEO } from "@/hooks/useSEO";
 
 const Portfolio = () => {
   usePageTracking("Performances");
-  useCanonical("/portfolio");
+  useSEO({
+    title: "Performances & Portfolio | Lashikala Hettiarachchi, Flautist",
+    description:
+      "Explore recent performances, concerts, and collaborations by Sri Lankan flautist Lashikala Hettiarachchi across the UK and internationally.",
+    path: "/portfolio",
+  });
 
   const [performances, setPerformances] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

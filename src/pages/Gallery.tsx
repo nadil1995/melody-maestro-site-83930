@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowLeft, Images } from "lucide-react";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
-import { useCanonical } from "@/hooks/useCanonical";
+import { useSEO } from "@/hooks/useSEO";
 
 type GalleryImage = {
   src: string;
@@ -82,7 +82,12 @@ const REGION = import.meta.env.VITE_S3_REGION || "eu-west-2";
 
 const Gallery = () => {
   usePageTracking("Gallery");
-  useCanonical("/gallery");
+  useSEO({
+    title: "Photo Gallery | Lashikala Hettiarachchi, Flautist",
+    description:
+      "Photo gallery of performances, teaching, and musical events featuring flautist Lashikala Hettiarachchi in Croydon, London and beyond.",
+    path: "/gallery",
+  });
 
   const [groups, setGroups] = useState<GalleryGroup[]>(GALLERY_GROUPS as GalleryGroup[]);
   const [activeGroup, setActiveGroup] = useState<GalleryGroup | null>(null);

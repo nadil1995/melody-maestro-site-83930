@@ -10,11 +10,16 @@ import { useAnalytics } from "@/contexts/AnalyticsContext";
 import { trackFormSubmissionS3 } from "@/lib/analyticsTracker";
 import Footer from "@/components/Footer";
 import { usePageTracking } from "@/hooks/usePageTracking";
-import { useCanonical } from "@/hooks/useCanonical";
+import { useSEO } from "@/hooks/useSEO";
 
 const Contact = () => {
   usePageTracking("Contact");
-  useCanonical("/contact");
+  useSEO({
+    title: "Contact | Book Flute Lessons or a Performance | Lflauto",
+    description:
+      "Get in touch to book flute lessons in Croydon, London & Surrey, or enquire about live flute performances for weddings and events.",
+    path: "/contact",
+  });
   const { toast } = useToast();
   const { trackFormSubmission, trackUserAction } = useAnalytics();
   const [formData, setFormData] = useState({
